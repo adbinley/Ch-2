@@ -270,5 +270,28 @@ ggplot(aes(y = PD, x = season, fill = state), data = all_data3)+
   scale_fill_npg()+
   facet_wrap(~sw_foraging)
 
+#### LandCover Map ####
+
+#land cover data
+
+library(raster)
+library(ncdf4)
+library(rgdal)
+
+
+landcover <- raster("data/LandCover.tif")
+#plot(landcover)
+#landcover_stack <- stack("data files/LandCover.tif")
+
+#landcover
+#landcover$values
+
+#Nov 5 2020
+
+lc_3k <- read.csv("ebird3k_df_out.csv")
+lc_8k <- read.csv("ebird8k_df_out.csv")
+
+#some numbers are still weird - try it out anyways
+#need land cover class names
 
 
