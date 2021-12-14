@@ -1,0 +1,274 @@
+#supplementary materials
+
+#### Figure 1 ####
+load("data_outputs/migrants_2019.RData")
+
+x <- migrants_2019 %>%
+  filter(season == "breeding") 
+table(x$SW_mig, x$diet2)
+table(x$SW_mig, x$sw_foraging)
+table(x$diet2, x$sw_foraging)
+
+#alternative visualization for figure 1a:
+
+int.plota <- migrants_2019 %>%
+  group_by(SW_mig, season) %>%
+  dplyr::summarize(mean = mean(SHM),
+                   sd = sd(SHM),
+                   se = sd(SHM)/sqrt(length(SHM)))
+
+int.plot1 <- int.plota %>% 
+  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
+
+ggplot(int.plota, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
+  geom_line(position=position_dodge(0.25)) +
+  geom_point(position=position_dodge(0.25)) +
+  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.2,
+                position=position_dodge(0.25)) +
+  theme_classic() +
+  xlab("Season") +
+  ylab("Mean SHM") +
+  labs(col = "Migratory Strategy") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg()
+
+#1b alternate
+int.plotb <-all_data4 %>%
+  group_by(SW_mig, season) %>%
+  dplyr::summarize(mean = mean(ratio),
+                   sd = sd(ratio),
+                   se = sd(ratio)/sqrt(length(ratio)))
+
+#int.plot2 <- int.plotb %>% 
+#  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
+
+ggplot(int.plotb, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
+  geom_line(position=position_dodge(0.25)) +
+  geom_point(position=position_dodge(0.25)) +
+  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.2,
+                position=position_dodge(0.25)) +
+  theme_classic() +
+  xlab("Season") +
+  ylab("Mean SHM") +
+  geom_hline(yintercept=1, linetype="dashed", 
+             color = "orange", size=1)+
+  labs(col = "Migratory Strategy") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg()
+
+# Figure 1 ratios separated into natural and impacted #
+#discussion?
+
+#rPIs
+
+SHM_sep <- migrants_2019 %>%
+  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
+
+ggplot(aes(y = rPI, x = season, fill = state), data = SHM_sep)+
+  geom_boxplot()+
+  theme_classic() +
+  xlab("Season") +
+  ylab("rPI") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg()+
+  facet_wrap(~SW_mig)
+
+
+#PDs
+
+load("data/species_basic.RData")
+load("data_outputs/bootstrap_all.RData")
+
+all_data <- left_join(bootstrap_all,species_basic,by="species_code")
+
+all_data1 <- all_data %>%
+  group_by(season, SW_mig, state) %>%
+  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
+
+SD <- transform(all_data1[,-c(1:3)], stdev =apply(all_data1[,-c(1:3)], 1, sd, na.rm = TRUE))
+stdev <- SD$stdev
+M <- transform(all_data1[,-c(1:3)], mean =apply(all_data1[,-c(1:3)], 1, mean, na.rm = TRUE))
+mean <- M$mean
+
+#boxplot
+all_data3 <- all_data1 %>%
+  pivot_longer(!c("season","SW_mig","state"), names_to = "No.", values_to = "PD" )
+
+all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
+
+ggplot(aes(y = PD, x = season, fill = state), data = all_data3)+
+  geom_boxplot()+
+  theme_classic() +
+  xlab("Season") +
+  ylab("Proportion Positive") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg()+
+  facet_wrap(~SW_mig)
+
+#### Figure 2 ####
+
+#alternate
+
+mig.diet.plot <- migrants_2019 %>%
+  group_by(diet2, season) %>%
+  dplyr::summarize(mean = mean(SHM),
+                   sd = sd(SHM),
+                   se = sd(SHM)/sqrt(length(SHM)))
+
+ggplot(mig.diet.plot, aes(x = season, y = mean, group = diet2, col = diet2)) +
+  geom_line(position=position_dodge(0.25)) +
+  geom_point(position=position_dodge(0.25)) +
+  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.2,
+                position=position_dodge(0.25)) +
+  theme_classic() +
+  xlab("Season") +
+  ylab("Mean SHM") +
+  labs(col = "Diet") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+facet_wrap(~diet2)
+
+#2b alternate
+int.plotb <-all_data4 %>%
+  group_by(diet2, season) %>%
+  dplyr::summarize(mean = mean(ratio),
+                   sd = sd(ratio),
+                   se = sd(ratio)/sqrt(length(ratio)))
+
+#int.plot2 <- int.plotb %>% 
+#  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
+
+ggplot(int.plotb, aes(x = season, y = mean, group = diet2, col = diet2)) +
+  geom_line(position=position_dodge(0.25)) +
+  geom_point(position=position_dodge(0.25)) +
+  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.2,
+                position=position_dodge(0.25)) +
+  theme_classic() +
+  xlab("Season") +
+  ylab("Mean IHM") +
+  geom_hline(yintercept=1, linetype="dashed", 
+             color = "orange", size=1)+
+  labs(col = "Diet") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg()
+
+
+
+#  separated
+
+SHM_sep <- migrants_2019 %>%
+  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
+
+ggplot(aes(y = rPI, x = season, fill = state), data = SHM_sep)+
+  geom_boxplot()+
+  theme_classic() +
+  xlab("Season") +
+  ylab("rPI") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg()+
+  facet_wrap(~diet2)
+
+
+#### Figure 3 ####
+
+
+#alternative visualization for figure 3a:
+mig.for.plot <- migrants_2019 %>%
+  group_by(sw_foraging, season) %>%
+  dplyr::summarize(mean = mean(SHM),
+                   sd = sd(SHM),
+                   se = sd(SHM)/sqrt(length(SHM)))
+
+ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
+  geom_line(position=position_dodge(0.25)) +
+  geom_point(position=position_dodge(0.25)) +
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=.2,
+                position=position_dodge(0.25)) +
+  theme_classic() +
+  xlab("Season") +
+  ylab("Mean IHM") +
+  labs(col = "Foraging Strategy") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  facet_wrap(~sw_foraging)
+
+
+#3b alternate
+int.plotb <-all_data4 %>%
+  group_by(sw_foraging, season) %>%
+  dplyr::summarize(mean = mean(ratio),
+                   sd = sd(ratio),
+                   se = sd(ratio)/sqrt(length(ratio)))
+
+#int.plot2 <- int.plotb %>% 
+#  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
+
+ggplot(int.plotb, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
+  geom_line(position=position_dodge(0.25)) +
+  geom_point(position=position_dodge(0.25)) +
+  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.2,
+                position=position_dodge(0.25)) +
+  theme_classic() +
+  xlab("Season") +
+  ylab("Mean SHM") +
+  geom_hline(yintercept=1, linetype="dashed", 
+             color = "orange", size=1)+
+  labs(col = "Foraging Strategy") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg()#+
+  #facet_wrap(~sw_foraging)
+
+# Figure 3 ratios separated into natural and impacted #
+#discussion?
+
+#rPIs
+
+SHM_sep <- migrants_2019 %>%
+  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
+
+ggplot(aes(y = rPI, x = season, fill = state), data = SHM_sep)+
+  geom_boxplot()+
+  theme_classic() +
+  xlab("Season") +
+  ylab("rPI") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg()+
+  facet_wrap(~sw_foraging)
+
+
+#PDs
+
+load("data/species_basic.RData")
+load("data_outputs/bootstrap_all.RData")
+
+all_data <- left_join(bootstrap_all,species_basic,by="species_code")
+
+all_data1 <- all_data %>%
+  group_by(season, sw_foraging, state) %>%
+  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
+
+SD <- transform(all_data1[,-c(1:3)], stdev =apply(all_data1[,-c(1:3)], 1, sd, na.rm = TRUE))
+stdev <- SD$stdev
+M <- transform(all_data1[,-c(1:3)], mean =apply(all_data1[,-c(1:3)], 1, mean, na.rm = TRUE))
+mean <- M$mean
+
+#boxplot
+all_data3 <- all_data1 %>%
+  pivot_longer(!c("season","sw_foraging","state"), names_to = "No.", values_to = "PD" )
+
+all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
+
+ggplot(aes(y = PD, x = season, fill = state), data = all_data3)+
+  geom_boxplot()+
+  theme_classic() +
+  xlab("Season") +
+  ylab("SHM") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg()+
+  facet_wrap(~sw_foraging)
+
+
+
