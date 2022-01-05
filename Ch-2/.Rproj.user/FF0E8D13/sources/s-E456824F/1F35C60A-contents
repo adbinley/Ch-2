@@ -280,6 +280,8 @@ library(rgdal)
 
 
 landcover <- raster("data/LandCover.tif")
+unique(landcover)
+temp <- raster("data/srd_raster_template.tif")
 #plot(landcover)
 #landcover_stack <- stack("data files/LandCover.tif")
 
@@ -293,5 +295,11 @@ lc_8k <- read.csv("ebird8k_df_out.csv")
 
 #some numbers are still weird - try it out anyways
 #need land cover class names
+
+1:5
+
+
+
+
 
 
