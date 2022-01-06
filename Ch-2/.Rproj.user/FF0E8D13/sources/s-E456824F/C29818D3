@@ -1,0 +1,24 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1641404939787.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2320364459",
+    "id" : "C29818D3",
+    "lastKnownWriteTime" : 1641422818,
+    "last_content_update" : 1641422818354,
+    "path" : "D:/Allison/Github_Projects/Ch-2/Ch-2/appendix_plots/appendixc.Rmd",
+    "project_path" : "appendix_plots/appendixc.Rmd",
+    "properties" : {
+        "cursorPosition" : "65,4",
+        "last_setup_crc32" : "E456824Fbb338d19",
+        "scrollLine" : "50",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

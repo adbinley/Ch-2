@@ -1,0 +1,107 @@
+---
+title: "Appendix C"
+author: "Allison Binley"
+date: "January 5, 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Detailed example of IHM and SHM calculations for Magnolia Warbler in the breeding season. 
+
+SHM
+
+Limit to base regression models for stixels within the specified temporal extent. For Magnolia Warbler, this is stixels that model occurrence between June 14 and August 3. PIs will only be extracted for models that fall within these dates. Occurrence estimates for the breeding period for Magnolia Warbler are based on an ensemble of 9712 base models, therefore we have 9712 measures of predictor importance for each land cover class for this species. 
+
+
+```{r}
+
+library(tidyverse)
+bird_data <- read.csv("data/bird_data_v4.csv")
+load("D:/Allison/Github_Projects/Ch-2/Ch-2/data_outputs/rpis_breeding_2019.RData")
+
+magwar <- rpis_id_breeding %>%
+  filter(species_code == "magwar")
+
+n_distinct(magwar$stixel_id)
+```
+
+Pictured below is a random sample of ten of the 9712 stixels that comprise the breeding season for Magnolia Warbler (Figure S1). 
+
+```{r}
+library(sf)
+load("appendix_plots/appC1.RData")
+
+#Figure S1
+plot(st_geometry(stixels2), col = "#1F968BFF")
+plot(ne_land, add=T)
+plot(ne_country_lines, add=T)
+```
+
+Each stixel represents a spatiotemporal pixel in which a regression model is fitted to model Magnolia Warbler occurrence. For each model, a predictor importance value can be calculated for each predictor in the model, measuring the relative decrease in model fit if that predictor were to be removed, keeping all other predictors constant (or averaging across them?). Stixels may overlap in time and space.
+
+We filtered out all predictors that were not land cover: "Is Stationary" (whether checklist was stationary or traveling), "Score" (checklist calibration index; Johnston et al. 20XX), "Year", "Day", "Solar Noon Diff", "Effort Hours", "Effort Distance (km)", "Number Observers", "Eastness Median", "Eastness SD", "Elevation Median", "Elevation SD", "Island", "Northness Median", "Northness SD", and "Nighttime Lights". 
+
+The land cover predictors that remained were: "Tidal Mudflats", "Barren", "Permanent Snow and Ice", "Evergreen Needleleaf Forests", "Evergreen Broadleaf Forests", "Deciduous Needleleaf Forests", "Deciduous Broadleaf Forests", "Mixed Broadleaf/Needleleaf Forests", "Mixed Broadleaf Evergreen/Deciduous Forests", "Open Forests", "Sparse Forests", "Unclassified", "Dense Herbaceous", "Sparse Herbaceous", "Dense Shrublands", "Shrubland/Grassland Mosaics", "Sparse Shrublands", "Forest/Cropland Mosaics", "Natural Herbaceous/Croplands Mosaics", "Herbaceous Croplands", "Woody Wetlands", "Herbaceous Wetlands", and "Tundra". The landscape metric used for all land-cover classes was proportion of landscape (PLAND). 
+
+Predictor importance values for each land-cover class in each stixel were rescaled to calculate a relative predictor importance for each, where the sum of all predictor importance values for a given stixel added to 1 (Figure S2).
+
+```{r, message=F,echo=F}
+stixels3 <- stixels2[4,]
+
+
+#plot(ne_country_lines)
+#plot(ne_land, add=T)
+#plot(st_geometry(stixels3), col = "#1F968BFF", add=T)
+
+map1 <- ggplot()+
+  geom_sf(data= ne_land)+
+  geom_sf(data= ne_country_lines)+
+  geom_sf(data = stixels3, col = "red", fill = "yellow")+
+  coord_sf(xlim=c(-150,-25))+
+  theme_classic()
+
+map1
+
+stacked <- rpis_id_breeding%>%
+  filter(stixel_id == "63-199.6-NSSWNEEN",#"48-177-NSSNSW",
+         species_code=="magwar")%>% #this is the specific stixel pictured on the map
+  select(c(6:28))
+
+stacked_long <- pivot_longer(stacked, 1:23, names_to="lc_class", values_to = "PI")
+stacked_long$x <- rep("x", length(stacked_long$lc_class))
+
+stacked_long$lc_class <- factor(stacked_long$lc_class, levels=c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests PLAND",                
+                                                                "Deciduous Needleleaf Forests PLAND","Deciduous Broadleaf Forests PLAND",                
+                                                                "Mixed Broadleaf/Needleleaf Forests PLAND",
+                                                                "Mixed Broadleaf Evergreen/Deciduous Forests PLAND",
+                                                                "Open Forests PLAND", "Woody Wetlands PLAND", #8 natural
+                                                                "Forest/Cropland Mosaics PLAND",                    
+                                                                "Natural Herbaceous/Croplands Mosaics PLAND",       
+                                                                "Herbaceous Croplands PLAND", 
+                                                                "Barren PLAND", # 4 modified
+                                                                "Tidal Mudflats PLAND","Permanent Snow and Ice PLAND","Sparse Forests PLAND",
+                                                                "Unclassified PLAND","Dense Herbaceous PLAND","Sparse Herbaceous PLAND",
+                                                                "Dense Shrublands PLAND","Shrubland/Grassland Mosaics PLAND","Sparse Shrublands PLAND",
+                                                                "Herbaceous Wetlands PLAND","Tundra PLAND" # 11 other
+                                                                ))
+
+
+stacked_long1 <- stacked_long %>%
+  filter(PI >0) #6 natural, 3 modified, 2 other
+
+clrs <- c("#062891","#0541C2","#1097F7","#051F72","#04528A","#6c8EF8","#FEE227","#FDC12A","#FDA50F","#616161","#C1C1C1")
+
+ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
+  geom_bar(position="fill", stat="identity")+
+  scale_fill_manual(values= clrs)+
+  theme_classic(base_family = "serif", base_size = 18)+
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())+
+  xlab("")+
+  ylab("Relative Predictor Importance")+
+  labs(fill="Land Cover Class")
+
+```

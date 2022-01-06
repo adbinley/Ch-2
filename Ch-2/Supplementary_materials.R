@@ -1,5 +1,30 @@
 #supplementary materials
 
+#### Appendix A ####
+
+load("data/species_basic.RData")
+
+# Table S1- contingency table of migratory strategy and diet
+table(species_basic$diet2,species_basic$SW_mig)
+
+# Table S2- contingency table of migratory strategy and foraging strategy
+table(species_basic$sw_foraging,species_basic$SW_mig)
+
+# Table S3- contingency table of diet and foraging strategy
+table(species_basic$sw_foraging,species_basic$diet2)
+
+#### Appendix B ####
+
+#load data
+
+#all relevant scripts in repository
+
+#### Appendix C ####
+
+
+#### Appendix D ####
+
+
 #### Figure 1 ####
 load("data_outputs/migrants_2019.RData")
 
