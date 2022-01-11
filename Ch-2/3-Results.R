@@ -85,7 +85,7 @@ AIC(mig.stat.lmer)
 
 #### fig1a ####
 
-migrants_2019$season <- factor(migrants_2019$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
+#migrants_2019$season <- factor(migrants_2019$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 migrants_2019$SW_mig <- factor(migrants_2019$SW_mig, levels=c("N","S","NR","R"))
 
 #boxplot
@@ -121,10 +121,10 @@ int.plota <- migrants_2019 %>%
 #int.plot1 <- int.plota %>% 
 #  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
 
-fig1a <- ggplot(int.plota, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
+ggplot(int.plota, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
 geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
-  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=.5,
+  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.5,
                 position=position_dodge(0.6)) +
 theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
@@ -132,16 +132,15 @@ theme_classic(base_size = 22, base_family = "serif") +
  # geom_hline(yintercept=1, linetype="dashed", 
  #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
-  #theme(axis.text.x = element_blank(),
-  #    #axis.ticks.x = element_blank(),
-  #    axis.title.x = element_blank())+
-  theme(axis.text.x = element_text(angle = 45, hjust=1),
-        panel.grid.minor.x = element_line( size=.1, color="black" ) )+
+  theme(axis.text.x = element_blank(),
+      #axis.ticks.x = element_blank(),
+      axis.title.x = element_blank(),
+      panel.grid.major.y = element_line( size=.1, color="black" ) )+
   scale_color_manual(name = "Migratory Strategy",
                     labels = c("Neotropical Migrants","Short-Distance Migrants","Neotropical Residents","North American Residents"),
                     values=mypal)
   
-fig1a
+
 
 
 #PDs
@@ -151,30 +150,23 @@ load("data_outputs/bootstrap_all.RData")
 
 all_data <- left_join(bootstrap_all,species_basic,by="species_code")
 
-#summing natural and modified land cover PDs for each mig strat in each season
-#and calculating the proportion positive for each
-#yields 1000 proportions for each grouping
 all_data1 <- all_data %>%
   group_by(season, SW_mig, state) %>%
   summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
 
-#calculating mean and SD across all bootstrap replicates
-#SD <- transform(all_data1[,-c(1:3)], stdev =apply(all_data1[,-c(1:3)], 1, sd, na.rm = TRUE))
-#stdev <- SD$stdev
-#M <- transform(all_data1[,-c(1:3)], mean =apply(all_data1[,-c(1:3)], 1, mean, na.rm = TRUE))
-#mean <- M$mean
+SD <- transform(all_data1[,-c(1:3)], stdev =apply(all_data1[,-c(1:3)], 1, sd, na.rm = TRUE))
+stdev <- SD$stdev
+M <- transform(all_data1[,-c(1:3)], mean =apply(all_data1[,-c(1:3)], 1, mean, na.rm = TRUE))
+mean <- M$mean
 
-#long format (bootstrap reps)
 all_data3_mig <- all_data1 %>%
-  pivot_longer(!c("season","SW_mig","state"), names_to = "No.", values_to = "Proportion_Positive" )
+  pivot_longer(!c("season","SW_mig","state"), names_to = "No.", values_to = "PD" )
 
-#wide format to separate natural and modified values to calculate ratio
 all_data4_mig <- all_data3_mig %>%
-  pivot_wider(names_from = "state", values_from = "Proportion_Positive")
+  pivot_wider(names_from = "state", values_from = "PD")
 
-#calculate SHM - proportion positive natural relative to proportion positive modified
 all_data4_mig <- all_data4_mig %>%
-  mutate(SHM = (natural+1)/(modified+1))
+  mutate(ratio = (natural+1)/(modified+1))
 
 all_data4_mig$season <- factor(all_data4_mig$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 all_data4_mig$SW_mig <- factor(all_data4_mig$SW_mig, levels=c("N","S","NR","R"))
@@ -206,8 +198,6 @@ write.table(mig.tukey.pd.table$`pairwise differences of SW_mig, season`, file = 
 
 
 #### fig1b ####
-
-#boxplot
 fig1b <- ggplot(aes(y = ratio, x = season, fill = SW_mig), data = all_data4_mig)+
   geom_boxplot(position=position_dodge(.9))+
   #geom_violin(position=position_dodge(.9))+
@@ -221,34 +211,6 @@ fig1b <- ggplot(aes(y = ratio, x = season, fill = SW_mig), data = all_data4_mig)
   #geom_point(position=position_dodge(width=0.9),aes(group=SW_mig), alpha = 0.1)+
   scale_fill_npg(labels = c("Neotropical Migrants","Short-Distance Migrants","Neotropical Residents","North American Residents"))
 
-#not boxplot
-mypal <- pal_npg("nrc", alpha = 1)(4)
-int.plotb <- all_data4_mig %>%
-  group_by(SW_mig, season) %>%
-  dplyr::summarize(mean = mean(SHM),
-                   sd = sd(SHM),
-                   se = sd(SHM)/sqrt(length(SHM)))
-
-fig1b <- ggplot(int.plotb, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
-  geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
-  geom_point(position=position_dodge(0.6), size=3, pch=18) +
-  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=.5,
-                position=position_dodge(0.6)) +
-  theme_classic(base_size = 22, base_family = "serif") +
-  xlab("Season") +
-  ylab("Mean SHM") +
-  # geom_hline(yintercept=1, linetype="dashed", 
-  #            color = "black", size=1)+
-  #labs(col = "Migratory Strategy") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_color_manual(name = "Migratory Strategy",
-                     labels = c("Neotropical Migrants","Short-Distance Migrants","Neotropical Residents","North American Residents"),
-                     values=mypal)
-
-
-
-
-
 fig1a
 fig1b
 plotlist1 <- list(fig1a,fig1b)
@@ -261,7 +223,7 @@ figure1 <- ggarrange(plotlist=plotlist1,
                      align="hv")#%>%
   #annotate_figure(bottom = text_grob("Season", gp = gpar(cex = 1.3)))
 
-png("fig_outputs/figure1_dot.png", height = 11.5, width = 8, units = "in",res=300)
+png("fig_outputs/figure1.png", height = 11.5, width = 8, units = "in",res=300)
 figure1
 dev.off()
 

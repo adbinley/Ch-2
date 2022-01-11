@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1639668922319.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2675113309",
+    "id" : "B93AC449",
+    "lastKnownWriteTime" : 1639519479,
+    "last_content_update" : 1639519479,
+    "path" : "D:/Allison/Github_Projects/Ch-2/Ch-2/2-PI_loop_extraction_2019.R",
+    "project_path" : "2-PI_loop_extraction_2019.R",
+    "properties" : {
+        "cursorPosition" : "117,30",
+        "scrollLine" : "120"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
