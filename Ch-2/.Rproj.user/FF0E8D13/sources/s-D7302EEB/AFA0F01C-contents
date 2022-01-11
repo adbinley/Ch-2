@@ -124,7 +124,7 @@ int.plota <- migrants_2019 %>%
 fig1a <- ggplot(int.plota, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
 geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
-  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=.5,
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
 theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
@@ -135,11 +135,11 @@ theme_classic(base_size = 22, base_family = "serif") +
   #theme(axis.text.x = element_blank(),
   #    #axis.ticks.x = element_blank(),
   #    axis.title.x = element_blank())+
-  theme(axis.text.x = element_text(angle = 45, hjust=1),
-        panel.grid.minor.x = element_line( size=.1, color="black" ) )+
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
   scale_color_manual(name = "Migratory Strategy",
                     labels = c("Neotropical Migrants","Short-Distance Migrants","Neotropical Residents","North American Residents"),
-                    values=mypal)
+                    values=mypal)+
+  geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
   
 fig1a
 
@@ -232,7 +232,7 @@ int.plotb <- all_data4_mig %>%
 fig1b <- ggplot(int.plotb, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
   geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
-  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=.5,
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
@@ -243,7 +243,8 @@ fig1b <- ggplot(int.plotb, aes(x = season, y = mean, group = SW_mig, col = SW_mi
   theme(axis.text.x = element_text(angle = 45, hjust=1))+
   scale_color_manual(name = "Migratory Strategy",
                      labels = c("Neotropical Migrants","Short-Distance Migrants","Neotropical Residents","North American Residents"),
-                     values=mypal)
+                     values=mypal)+
+  geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
 
 
 
@@ -423,6 +424,8 @@ AIC(mig.stat.lmer)
 #vis
 
 #### fig2a ####
+
+#boxplot
 fig2a <- ggplot(aes(y = IHM, x = season), data = migrants_2019) +
   geom_boxplot(aes(fill = diet2),position=position_dodge(.9))+
   #geom_violin(aes(fill = SW_mig),position=position_dodge(.9))+
@@ -445,6 +448,36 @@ fig2a <- ggplot(aes(y = IHM, x = season), data = migrants_2019) +
         #axis.title.y = element_blank())+
   scale_fill_npg(labels=c("Carnivore","Frugivore","Granivore","Insectivore","Omnivore"))#+
   #facet_wrap(~diet2)
+fig2a
+
+#not boxplot
+mypal <- pal_npg("nrc", alpha = 1)(5)
+mig.diet.plot <- migrants_2019 %>%
+  group_by(diet2, season) %>%
+  dplyr::summarize(mean = mean(IHM),
+                   sd = sd(IHM),
+                   se = sd(IHM)/sqrt(length(IHM)))
+
+fig2a <- ggplot(mig.diet.plot, aes(x = season, y = mean, group = diet2, col = diet2)) +
+  geom_line(aes(group=diet2),position=position_dodge(0.6)) +
+  geom_point(position=position_dodge(0.6), size=3, pch=18) +
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
+                position=position_dodge(0.6)) +
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Mean IHM") +
+  # geom_hline(yintercept=1, linetype="dashed", 
+  #            color = "black", size=1)+
+  #labs(col = "Migratory Strategy") +
+  #theme(axis.text.x = element_blank(),
+  #    #axis.ticks.x = element_blank(),
+  #    axis.title.x = element_blank())+
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_color_manual(name = "Diet",
+                     labels = c("Carnivore","Frugivore","Granivore","Insectivore","Omnivore"),
+                     values=mypal)+
+  geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
+
 fig2a
 
 #PDs
@@ -470,7 +503,7 @@ all_data4_diet <- all_data3_diet %>%
   pivot_wider(names_from = "state", values_from = "PD")
 
 all_data4_diet <- all_data4_diet %>%
-  mutate(ratio = (natural+1)/(modified+1))
+  mutate(SHM = (natural+1)/(modified+1))
 
 all_data4_diet$season <- factor(all_data4_diet$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 
@@ -495,6 +528,7 @@ write.table(diet.tukey.pd.table$`pairwise differences of diet2, season`, file = 
 
 
 #### fig2b ####
+#boxplot
 fig2b <- ggplot(aes(y = ratio, x = season, fill = diet2), data = all_data4_diet)+
   geom_boxplot(position=position_dodge(.9))+
   #geom_violin(position=position_dodge(.9))+
@@ -509,6 +543,32 @@ fig2b <- ggplot(aes(y = ratio, x = season, fill = diet2), data = all_data4_diet)
   #geom_point(position=position_dodge(width=0.9),aes(group=SW_mig), alpha = 0.1)+
   scale_fill_npg(labels=c("Carnivore","Frugivore","Granivore","Insectivore","Omnivore"))
 
+#not boxplot
+
+mypal <- pal_npg("nrc", alpha = 1)(5)
+int.plot.diet.b <- all_data4_diet %>%
+  group_by(diet2, season) %>%
+  dplyr::summarize(mean = mean(SHM),
+                   sd = sd(SHM),
+                   se = sd(SHM)/sqrt(length(SHM)))
+
+fig2b <- ggplot(int.plot.diet.b, aes(x = season, y = mean, group = diet2, col = diet2)) +
+  geom_line(aes(group=diet2),position=position_dodge(0.6)) +
+  geom_point(position=position_dodge(0.6), size=3, pch=18) +
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
+                position=position_dodge(0.6)) +
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Mean SHM") +
+  # geom_hline(yintercept=1, linetype="dashed", 
+  #            color = "black", size=1)+
+  #labs(col = "Migratory Strategy") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_color_manual(name = "Diet",
+                     labels = c("Carnivore","Frugivore","Granivore","Insectivore","Omnivore"),
+                     values=mypal)+
+  geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
+
 fig2a
 fig2b
 plotlist2 <- list(fig2a,fig2b)
@@ -520,7 +580,7 @@ figure2 <- ggarrange(plotlist=plotlist2,
                      legend="right",
                      align="hv")
 
-png("fig_outputs/figure2.png", height = 11.5, width = 8, units = "in",res=300)
+png("fig_outputs/figure2_dot.png", height = 11.5, width = 8, units = "in",res=300)
 figure2
 dev.off()
 
@@ -599,6 +659,7 @@ write.table(PI.for.holm.table$`pairwise differences of sw_foraging, season`, fil
 #vis
 
 #### fig3a ####
+#boxplot
 fig3a <- ggplot(aes(y = IHM, x = season), data = migrants_2019) +
   geom_boxplot(aes(fill = sw_foraging),position=position_dodge(.9))+
   geom_point(position=position_dodge(width=0.9),aes(group=sw_foraging), alpha = 0.1)+
@@ -613,6 +674,37 @@ fig3a <- ggplot(aes(y = IHM, x = season), data = migrants_2019) +
         #axis.title.y = element_blank())+
   scale_fill_npg(labels=c("Aerial Forager","Aerial Hawker","Bark Forager",
                           "Foliage Gleaner","Ground Forager","Ground Hawker"))
+fig3a
+
+#not boxplot
+mypal <- pal_npg("nrc", alpha = 1)(6)
+mig.for.plot <- migrants_2019 %>%
+  group_by(sw_foraging, season) %>%
+  dplyr::summarize(mean = mean(IHM),
+                   sd = sd(IHM),
+                   se = sd(IHM)/sqrt(length(IHM)))
+
+fig3a <- ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
+  geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
+  geom_point(position=position_dodge(0.6), size=3, pch=18) +
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
+                position=position_dodge(0.6)) +
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Mean IHM") +
+  # geom_hline(yintercept=1, linetype="dashed", 
+  #            color = "black", size=1)+
+  #labs(col = "Migratory Strategy") +
+  #theme(axis.text.x = element_blank(),
+  #    #axis.ticks.x = element_blank(),
+  #    axis.title.x = element_blank())+
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_color_manual(name = "Foraging Strategy",
+                     labels = c("Aerial Forager","Aerial Hawker","Bark Forager",
+                                "Foliage Gleaner","Ground Forager","Ground Hawker"),
+                     values=mypal)+
+  geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
+
 fig3a
 
 #PDs
@@ -638,7 +730,7 @@ all_data4_for <- all_data3_for %>%
   pivot_wider(names_from = "state", values_from = "PD")
 
 all_data4_for <- all_data4_for %>%
-  mutate(ratio = (natural+1)/(modified+1))
+  mutate(SHM = (natural+1)/(modified+1))
 
 all_data4_for$season <- factor(all_data4_for$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 
@@ -663,6 +755,7 @@ write.table(for.holm.pd.table$`pairwise differences of sw_foraging, season`, fil
 
 
 #### fig3b ####
+#boxplot
 fig3b <- ggplot(aes(y = ratio, x = season, fill = sw_foraging), data = all_data4_for)+
   geom_boxplot(position=position_dodge(.9))+
   theme_classic(base_size = 22, base_family = "serif") +
@@ -676,6 +769,31 @@ fig3b <- ggplot(aes(y = ratio, x = season, fill = sw_foraging), data = all_data4
   scale_fill_npg(labels=c("Aerial Forager","Aerial Hawker","Bark Forager",
                           "Foliage Gleaner","Ground Forager","Ground Hawker"))
 
+#not boxplot
+int.plot.for.b <- all_data4_for %>%
+  group_by(sw_foraging, season) %>%
+  dplyr::summarize(mean = mean(SHM),
+                   sd = sd(SHM),
+                   se = sd(SHM)/sqrt(length(SHM)))
+
+fig3b <- ggplot(int.plot.for.b, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
+  geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
+  geom_point(position=position_dodge(0.6), size=3, pch=18) +
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
+                position=position_dodge(0.6)) +
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Mean SHM") +
+  # geom_hline(yintercept=1, linetype="dashed", 
+  #            color = "black", size=1)+
+  #labs(col = "Migratory Strategy") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_color_manual(name = "Foraging Strategy",
+                     labels = c("Aerial Forager","Aerial Hawker","Bark Forager",
+                                "Foliage Gleaner","Ground Forager","Ground Hawker"),
+                     values=mypal)+
+  geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
+
 fig3a
 fig3b
 plotlist3 <- list(fig3a,fig3b)
@@ -687,7 +805,7 @@ figure3 <- ggarrange(plotlist=plotlist3,
                      legend="right",
                      align="hv")
 
-png("fig_outputs/figure3.png", height = 11.5, width = 8, units = "in",res=300)
+png("fig_outputs/figure3_dot.png", height = 11.5, width = 8, units = "in",res=300)
 figure3
 dev.off()
 
