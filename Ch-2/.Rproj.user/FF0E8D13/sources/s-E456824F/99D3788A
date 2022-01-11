@@ -2,18 +2,18 @@
     "collab_server" : "",
     "contents" : "",
     "created" : 1641399567884.000,
-    "dirty" : false,
+    "dirty" : true,
     "encoding" : "UTF-8",
     "folds" : "",
     "hash" : "0",
     "id" : "99D3788A",
-    "lastKnownWriteTime" : 1639519479,
-    "last_content_update" : 1639519479,
+    "lastKnownWriteTime" : 1641507945,
+    "last_content_update" : 1641930329378,
     "path" : "D:/Allison/Github_Projects/Ch-2/Ch-2/3-Results.R",
     "project_path" : "3-Results.R",
     "properties" : {
-        "cursorPosition" : "101,42",
-        "scrollLine" : "94"
+        "cursorPosition" : "145,0",
+        "scrollLine" : "129"
     },
     "relative_order" : 4,
     "source_on_save" : false,

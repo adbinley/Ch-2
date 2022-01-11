@@ -35,9 +35,9 @@ library(sf)
 load("appendix_plots/appC1.RData")
 
 #Figure S1
-plot(st_geometry(stixels2), col = "#1F968BFF")
-plot(ne_land, add=T)
-plot(ne_country_lines, add=T)
+#plot(st_geometry(stixels2), col = "#1F968BFF")
+#plot(ne_land, add=T)
+#plot(ne_country_lines, add=T)
 ```
 
 Each stixel represents a spatiotemporal pixel in which a regression model is fitted to model Magnolia Warbler occurrence. For each model, a predictor importance value can be calculated for each predictor in the model, measuring the relative decrease in model fit if that predictor were to be removed, keeping all other predictors constant (or averaging across them?). Stixels may overlap in time and space.
@@ -49,6 +49,11 @@ The land cover predictors that remained were: "Tidal Mudflats", "Barren", "Perma
 Predictor importance values for each land-cover class in each stixel were rescaled to calculate a relative predictor importance for each, where the sum of all predictor importance values for a given stixel added to 1 (Figure S2).
 
 ```{r, message=F,echo=F}
+library(png)
+library(cowplot)
+library(magick)
+library(ggpubr)
+
 stixels3 <- stixels2[4,]
 
 
@@ -56,14 +61,20 @@ stixels3 <- stixels2[4,]
 #plot(ne_land, add=T)
 #plot(st_geometry(stixels3), col = "#1F968BFF", add=T)
 
+
 map1 <- ggplot()+
   geom_sf(data= ne_land)+
   geom_sf(data= ne_country_lines)+
-  geom_sf(data = stixels3, col = "red", fill = "yellow")+
+  geom_sf(data=stixels2, fill="#1F968BFF", alpha = 0.5)+
+  geom_sf(data = stixels3, col = "#1F968BFF", fill = "yellow")+
   coord_sf(xlim=c(-150,-25))+
   theme_classic()
 
-map1
+#map1
+
+map2 <- ggdraw(map1) + 
+  draw_image("appendix_plots/mawa3.png", x = 0.95, y = 0.1, hjust = 1, vjust = 0, width = 0.25, height = 0.25)
+
 
 stacked <- rpis_id_breeding%>%
   filter(stixel_id == "63-199.6-NSSWNEEN",#"48-177-NSSNSW",
@@ -94,14 +105,31 @@ stacked_long1 <- stacked_long %>%
 
 clrs <- c("#062891","#0541C2","#1097F7","#051F72","#04528A","#6c8EF8","#FEE227","#FDC12A","#FDA50F","#616161","#C1C1C1")
 
-ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
+rpi_plot <- ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
   geom_bar(position="fill", stat="identity")+
-  scale_fill_manual(values= clrs)+
+  scale_fill_manual(name = "Land Cover Class",values= clrs,
+                    labels = c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests",                
+                               "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests",                
+                               "Mixed Broadleaf/Needleleaf Forests",
+                               "Mixed Broadleaf Evergreen/Deciduous Forests",
+                               "Open Forests", "Woody Wetlands", 
+                               "Forest/Cropland Mosaics",                    
+                               "Natural Herbaceous/Croplands Mosaics",       
+                               "Herbaceous Croplands", 
+                               "Barren", 
+                               "Tidal Mudflats","Permanent Snow and Ice","Sparse Forests",
+                               "Unclassified","Dense Herbaceous","Sparse Herbaceous",
+                               "Dense Shrublands","Shrubland/Grassland Mosaics","Sparse Shrublands",
+                               "Herbaceous Wetlands","Tundra"))+
   theme_classic(base_family = "serif", base_size = 18)+
   theme(axis.ticks.x = element_blank(),
         axis.text.x = element_blank())+
   xlab("")+
-  ylab("Relative Predictor Importance")+
-  labs(fill="Land Cover Class")
+  ylab("Relative Predictor Importance")
+
+plot_list <- list(map2,rpi_plot)
+
+ggarrange(plotlist = plot_list,
+          ncol=2)
 
 ```

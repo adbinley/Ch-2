@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1641916430615.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "EFF75DC",
+    "lastKnownWriteTime" : 18296075357585509,
+    "last_content_update" : 1641916430615,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "28A65F0C",
+        "caption" : "int.plota",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=int.plota&cache_key=28A65F0C",
+        "displayedObservations" : 16,
+        "environment" : "",
+        "object" : "int.plota",
+        "preview" : 0,
+        "totalObservations" : 16,
+        "variables" : 5
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

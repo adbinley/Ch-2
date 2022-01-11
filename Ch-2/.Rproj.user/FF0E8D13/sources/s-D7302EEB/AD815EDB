@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1641918024013.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "AD815EDB",
+    "lastKnownWriteTime" : 7308604914264011873,
+    "last_content_update" : 1641918024013,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "3295D3F7",
+        "caption" : "int.plotb",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=int.plotb&cache_key=3295D3F7",
+        "displayedObservations" : 16,
+        "environment" : "",
+        "object" : "int.plotb",
+        "preview" : 0,
+        "totalObservations" : 16,
+        "variables" : 5
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

@@ -88,7 +88,7 @@ AIC(mig.stat.lmer)
 #migrants_2019$season <- factor(migrants_2019$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 migrants_2019$SW_mig <- factor(migrants_2019$SW_mig, levels=c("N","S","NR","R"))
 
-
+#boxplot
 fig1a <- ggplot(aes(y = IHM, x = season), data = migrants_2019) +
   geom_boxplot(aes(fill = SW_mig),position=position_dodge(.9))+
   #geom_violin(aes(fill = SW_mig),position=position_dodge(.9))+
@@ -109,6 +109,39 @@ fig1a <- ggplot(aes(y = IHM, x = season), data = migrants_2019) +
         #axis.ticks.x = element_blank(),
         axis.title.x = element_blank())+
   scale_fill_npg(labels = c("Neotropical Migrants","Short-Distance Migrants","Neotropical Residents","North American Residents"))
+
+#not boxplot
+mypal <- pal_npg("nrc", alpha = 1)(4)
+int.plota <- migrants_2019 %>%
+  group_by(SW_mig, season) %>%
+  dplyr::summarize(mean = mean(IHM),
+                   sd = sd(IHM),
+                   se = sd(IHM)/sqrt(length(IHM)))
+
+#int.plot1 <- int.plota %>% 
+#  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
+
+ggplot(int.plota, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
+geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
+  geom_point(position=position_dodge(0.6), size=3, pch=18) +
+  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.5,
+                position=position_dodge(0.6)) +
+theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Mean IHM") +
+ # geom_hline(yintercept=1, linetype="dashed", 
+ #            color = "black", size=1)+
+  #labs(col = "Migratory Strategy") +
+  theme(axis.text.x = element_blank(),
+      #axis.ticks.x = element_blank(),
+      axis.title.x = element_blank(),
+      panel.grid.major.y = element_line( size=.1, color="black" ) )+
+  scale_color_manual(name = "Migratory Strategy",
+                    labels = c("Neotropical Migrants","Short-Distance Migrants","Neotropical Residents","North American Residents"),
+                    values=mypal)
+  
+
+
 
 #PDs
 

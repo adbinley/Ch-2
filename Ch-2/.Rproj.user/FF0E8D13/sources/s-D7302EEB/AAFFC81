@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1641916509035.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "AAFFC81",
+    "lastKnownWriteTime" : 7308604914264011873,
+    "last_content_update" : 1641916509035,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "64FAD3C3",
+        "caption" : "all_data4_mig",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=all_data4_mig&cache_key=64FAD3C3",
+        "displayedObservations" : "16000",
+        "environment" : "",
+        "object" : "all_data4_mig",
+        "preview" : "0",
+        "totalObservations" : "16000",
+        "variables" : "5"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

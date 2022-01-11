@@ -5,13 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "1245350303",
+    "hash" : "0",
     "id" : "F0E41EB",
     "lastKnownWriteTime" : 1639519479,
     "last_content_update" : 1639519479,
     "path" : "D:/Allison/Github_Projects/Ch-2/Ch-2/2-pds.R",
     "project_path" : "2-pds.R",
     "properties" : {
+        "cursorPosition" : "40,0",
+        "scrollLine" : "33"
     },
     "relative_order" : 5,
     "source_on_save" : false,
