@@ -24,6 +24,247 @@ table(species_basic$sw_foraging,species_basic$diet2)
 
 #### Appendix D ####
 
+#pairwise comparisons
+
+load("data_outputs/IHM_migrants_2019.RData")
+
+# mod 1a
+
+mig.stat.lmer <- lmer(IHM ~ season*SW_mig + (1 | species_code), data = migrants_2019)
+mig.tukey.table <- emmeans(mig.stat.lmer, list(pairwise ~ SW_mig*season), adjust = "holm")
+summary(mig.tukey.table)
+write.table(mig.tukey.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/mig-holm.txt", sep = ",", quote = FALSE, row.names = F)
+
+#mod 1b
+
+load("data_outputs/all_data4_mig.RData")
+pd_aov <- aov(SHM~season*SW_mig, data = all_data4_mig)
+mig.tukey.pd.table <- emmeans(pd_aov, list(pairwise ~ SW_mig*season), adjust = "holm")
+summary(mig.tukey.pd.table)
+write.table(mig.tukey.pd.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/mig-holm-pd.txt", sep = ",", quote = FALSE, row.names = F)
+
+#mod 2a
+
+mig.diet.lmer <- lmer(IHM ~ season*diet2 + (1 | species_code), data = migrants_2019)
+mig.diet.tukey.table <- emmeans(mig.diet.lmer, list(pairwise ~ diet2*season), adjust = "holm")
+summary(mig.diet.tukey.table)
+write.table(mig.diet.tukey.table$`pairwise differences of diet2, season`, file = "fig_outputs/diet-tuk-rpi.txt", sep = ",", quote = FALSE, row.names = F)
+
+#mod 2b
+
+load("data_outputs/all_data4_diet.RData")
+pd_aov <- aov(SHM~season*diet2, data = all_data4_diet)
+diet.tukey.pd.table <- emmeans(pd_aov, list(pairwise ~ diet2*season), adjust = "holm")
+summary(diet.tukey.pd.table)
+write.table(diet.tukey.pd.table$`pairwise differences of diet2, season`, file = "fig_outputs/diet-holm-pd.txt", sep = ",", quote = FALSE, row.names = F)
+
+#mod 3a
+
+mig.for.lmer <- lmer(IHM ~ season*sw_foraging + (1 | species_code), data = migrants)
+for.holm.rpi <- emmeans(mig.for.lmer, list(pairwise ~ sw_foraging*season), adjust = "holm")
+summary(for.holm.rpi)
+write.table(for.holm.rpi$`pairwise differences of sw_foraging, season`, file = "fig_outputs/rPI-for-holm.txt", sep = ",", quote = FALSE, row.names = F)
+
+#mod 3b
+
+load("data_outputs/all_data4_for.RData")
+pd_aov <- aov(SHM~season*sw_foraging, data = all_data4_for)
+for.holm.pd.table <- emmeans(pd_aov, list(pairwise ~ sw_foraging*season), adjust = "holm")
+summary(for.holm.pd.table)
+write.table(for.holm.pd.table$`pairwise differences of sw_foraging, season`, file = "fig_outputs/for-holm-pd.txt", sep = ",", quote = FALSE, row.names = F)
+
+
+#### Appendix E ####
+
+#AIC and R squared
+
+
+#### Appendix F ####
+
+# IHM and SHM ratios separated into natural and impacted #
+
+load("data_outputs/IHM_migrants_2019.RData")
+
+#Figure 1a separated
+
+IHM_sep <- migrants_2019 %>%
+  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
+
+names <- c(
+  'N'="Neotropical Migrant",
+  'NR'="Neotropical Resident",
+  'R'="North American Resident",
+  'S'="Short-distance Migrant"
+)
+
+figS10 <- ggplot(aes(y = rPI, x = season, fill = state), data = IHM_sep)+
+  geom_boxplot()+
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Relative Predictor Importance") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg(labels = c("Modified","Natural"))+
+  facet_wrap(.~SW_mig, labeller = as_labeller(names))
+
+png("appendix_plots/figureS10.png", height = 8, width = 11.5, units = "in",res=300)
+figS10
+dev.off()
+
+
+#Figure 1b separated
+
+load("data/species_basic.RData")
+load("data_outputs/bootstrap_all.RData")
+
+all_data <- left_join(bootstrap_all,species_basic,by="species_code")
+
+all_data1 <- all_data %>%
+  group_by(season, SW_mig, state) %>%
+  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
+
+all_data3 <- all_data1 %>%
+  pivot_longer(!c("season","SW_mig","state"), names_to = "No.", values_to = "PP" )
+
+all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
+
+figS11 <- ggplot(aes(y = PP, x = season, fill = state), data = all_data3)+
+  geom_boxplot()+
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Proportion Positive") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg(labels = c("Modified","Natural"))+
+  facet_wrap(.~SW_mig, labeller = as_labeller(names))
+
+png("appendix_plots/figureS11.png", height = 8, width = 11.5, units = "in",res=300)
+figS11
+dev.off()
+
+#Figure 2a separated
+
+IHM_sep <- migrants_2019 %>%
+  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
+
+names <- c(
+  'C'="Carnivore",
+  'F'="Frugivore",
+  'G'="Granivore",
+  'I'="Insectivore",
+  'O'="Omnivore"
+)
+
+figS12 <- ggplot(aes(y = rPI, x = season, fill = state), data = IHM_sep)+
+  geom_boxplot()+
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Relative Predictor Importance") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg(labels = c("Modified","Natural"))+
+  facet_wrap(.~diet2, labeller = as_labeller(names))
+
+png("appendix_plots/figureS12.png", height = 8, width = 11.5, units = "in",res=300)
+figS12
+dev.off()
+
+#Figure 2b separated
+
+load("data/species_basic.RData")
+load("data_outputs/bootstrap_all.RData")
+
+all_data <- left_join(bootstrap_all,species_basic,by="species_code")
+
+all_data1 <- all_data %>%
+  group_by(season, diet2, state) %>%
+  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
+
+all_data3 <- all_data1 %>%
+  pivot_longer(!c("season","diet2","state"), names_to = "No.", values_to = "PP" )
+
+all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
+
+figS13 <- ggplot(aes(y = PP, x = season, fill = state), data = all_data3)+
+  geom_boxplot()+
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Proportion Positive") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg(labels = c("Modified","Natural"))+
+  facet_wrap(.~diet2, labeller = as_labeller(names))
+
+png("appendix_plots/figureS13.png", height = 8, width = 11.5, units = "in",res=300)
+figS13
+dev.off()
+
+#Figure 3a separated
+
+IHM_sep <- migrants_2019 %>%
+  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
+
+names <- c(
+  'F'="Foliage Gleaner",
+  'B'="Bark Forager",
+  'G'="Ground Forager",
+  'AF'="Aerial Forager",
+  'GH'="Ground Hawker",
+  'AH'="Aerial Hawker"
+)
+
+figS14 <- ggplot(aes(y = rPI, x = season, fill = state), data = IHM_sep)+
+  geom_boxplot()+
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Relative Predictor Importance") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg(labels = c("Modified","Natural"))+
+  facet_wrap(.~sw_foraging, labeller = as_labeller(names))
+
+png("appendix_plots/figureS14.png", height = 8, width = 11.5, units = "in",res=300)
+figS14
+dev.off()
+
+#Figure 3b separated
+
+load("data/species_basic.RData")
+load("data_outputs/bootstrap_all.RData")
+
+all_data <- left_join(bootstrap_all,species_basic,by="species_code")
+
+all_data1 <- all_data %>%
+  group_by(season, sw_foraging, state) %>%
+  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
+
+all_data3 <- all_data1 %>%
+  pivot_longer(!c("season","sw_foraging","state"), names_to = "No.", values_to = "PP" )
+
+all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
+
+figS15 <- ggplot(aes(y = PP, x = season, fill = state), data = all_data3)+
+  geom_boxplot()+
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Proportion Positive") +
+  labs(fill = "State") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_fill_npg(labels = c("Modified","Natural"))+
+  facet_wrap(.~sw_foraging, labeller = as_labeller(names))
+
+png("appendix_plots/figureS15.png", height = 8, width = 11.5, units = "in",res=300)
+figS15
+dev.off()
+
+
+
+
+
+
+#### maybe garbage below, delete b4 pub ####
+
+
 
 #### Figure 1 ####
 load("data_outputs/migrants_2019.RData")
