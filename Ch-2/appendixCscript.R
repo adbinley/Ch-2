@@ -1,8 +1,11 @@
 library(ebirdst)
 library(sf)
+library(tidyverse)
 
 setwd("E:/eBird/data/raw/STEM")
 path <- "magwar-ERD2019-STATUS-20200930-3ed92d66"
+
+load("data_outputs/rpis_breeding_2019.RData")
 
 stixels <- load_stixels(path)
 
@@ -97,6 +100,15 @@ stacked_long1 <- stacked_long %>%
   filter(PI >0) #6 natural, 3 modified, 2 other
 
 clrs <- c("#062891","#0541C2","#1097F7","#051F72","#04528A","#6c8EF8","#FEE227","#FDC12A","#FDA50F","#616161","#C1C1C1")
+stacked_long1$lc_class <- factor(stacked_long1$lc_class, levels=c("Evergreen Needleleaf Forests PLAND",               
+                                 "Deciduous Needleleaf Forests PLAND","Deciduous Broadleaf Forests PLAND",                
+                                 "Mixed Broadleaf/Needleleaf Forests PLAND",
+                                 "Open Forests PLAND", "Woody Wetlands PLAND", #8 natural
+                                 "Forest/Cropland Mosaics PLAND",                    
+                                 "Herbaceous Croplands PLAND", 
+                                 "Barren PLAND", # 4 modified
+                                 "Sparse Forests PLAND",
+                                 "Dense Herbaceous PLAND"))
 
 plot_main <- ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
   geom_bar(position="fill", stat="identity")+
@@ -106,24 +118,20 @@ plot_main <- ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
         axis.text.x = element_blank())+
   xlab("")+
   ylab("Relative Predictor Importance")+
-  labs(fill="Land Cover Class")
+  labs(fill="Land-Cover Class")
 
 ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
   geom_bar(position="fill", stat="identity")+
   scale_fill_manual(name = "Land Cover Class",values= clrs,
-                    labels = c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests",                
+                    labels = c("Evergreen Needleleaf Forests",               
                                "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests",                
                                "Mixed Broadleaf/Needleleaf Forests",
-                               "Mixed Broadleaf Evergreen/Deciduous Forests",
-                               "Open Forests", "Woody Wetlands", 
+                               "Open Forests", "Woody Wetlands PLAND", #8 natural
                                "Forest/Cropland Mosaics",                    
-                               "Natural Herbaceous/Croplands Mosaics",       
                                "Herbaceous Croplands", 
-                               "Barren", 
-                               "Tidal Mudflats","Permanent Snow and Ice","Sparse Forests",
-                               "Unclassified","Dense Herbaceous","Sparse Herbaceous",
-                               "Dense Shrublands","Shrubland/Grassland Mosaics","Sparse Shrublands",
-                               "Herbaceous Wetlands","Tundra"))+
+                               "Barren", # 4 modified
+                               "Sparse Forests",
+                               "Dense Herbaceous"))+
   theme_classic(base_family = "serif", base_size = 18)+
   theme(axis.ticks.x = element_blank(),
         axis.text.x = element_blank())+

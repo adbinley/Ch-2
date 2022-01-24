@@ -22,7 +22,7 @@ load("data_outputs/IHM_migrants_2019.RData")
 ##migratory strategy - rPIs
 
 #lme4
-mig.stat.lmer <- lmer(IHM ~ season*SW_mig + (1 | species_code), data = migrants_2019)
+mig.stat.lmer <- lmer(impacted1 ~ season*SW_mig + (1 | species_code), data = migrants_2019)
 summary(mig.stat.lmer)
 AIC(mig.stat.lmer)
 anova(mig.stat.lmer)
@@ -115,9 +115,9 @@ fig1a <- ggplot(aes(y = IHM, x = season), data = migrants_2019) +
 mypal <- pal_npg("nrc", alpha = 1)(4)
 int.plota <- migrants_2019 %>%
   group_by(SW_mig, season) %>%
-  dplyr::summarize(mean = mean(IHM),
-                   sd = sd(IHM),
-                   se = sd(IHM)/sqrt(length(IHM)))
+  dplyr::summarize(mean = mean(modified),
+                   sd = sd(impacted1),
+                   se = sd(impacted1)/sqrt(length(impacted1)))
 
 #int.plot1 <- int.plota %>% 
 #  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
@@ -125,8 +125,8 @@ int.plota <- migrants_2019 %>%
 fig1a <- ggplot(int.plota, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
 geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
-  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
-                position=position_dodge(0.6)) +
+ # geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=1,
+  #              position=position_dodge(0.6)) +
 theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
   ylab("Mean IHM") +
@@ -374,15 +374,15 @@ fig2a
 mypal <- pal_npg("nrc", alpha = 1)(5)
 mig.diet.plot <- migrants_2019 %>%
   group_by(diet2, season) %>%
-  dplyr::summarize(mean = mean(IHM),
-                   sd = sd(IHM),
-                   se = sd(IHM)/sqrt(length(IHM)))
+  dplyr::summarize(mean = mean(modified),
+                   sd = sd(impacted1),
+                   se = sd(impacted1)/sqrt(length(impacted1)))
 
 fig2a <- ggplot(mig.diet.plot, aes(x = season, y = mean, group = diet2, col = diet2)) +
   geom_line(aes(group=diet2),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
-  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
-                position=position_dodge(0.6)) +
+  #geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
+               # position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
   ylab("Mean IHM") +
@@ -517,7 +517,7 @@ load("data_outputs/IHM_migrants_2019.RData")
 #anova(mig.diet.lme)
 #summary(aov(SHM ~ season*diet2 + Error(species_code), data = migrants))
 #lme4
-mig.for.lmer <- lmer(IHM ~ season*sw_foraging + (1 | species_code), data = migrants_2019)
+mig.for.lmer <- lmer(impacted1 ~ season*sw_foraging + (1 | species_code), data = migrants_2019)
 summary(mig.for.lmer)
 anova(mig.for.lmer)
 AIC(mig.for.lmer)
@@ -601,9 +601,9 @@ fig3a
 mypal <- pal_npg("nrc", alpha = 1)(6)
 mig.for.plot <- migrants_2019 %>%
   group_by(sw_foraging, season) %>%
-  dplyr::summarize(mean = mean(IHM),
-                   sd = sd(IHM),
-                   se = sd(IHM)/sqrt(length(IHM)))
+  dplyr::summarize(mean = mean(impacted1),
+                   sd = sd(impacted1),
+                   se = sd(impacted1)/sqrt(length(impacted1)))
 
 fig3a <- ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
   geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
