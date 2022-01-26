@@ -17,12 +17,12 @@ library(ggsignif)
 
 #### Figure 1 ####
 
-load("data_outputs/IHM_migrants_2019.RData")
+load("data_outputs/rPI_migrants_2019.RData")
 
 ##migratory strategy - rPIs
 
 #lme4
-mig.stat.lmer <- lmer(impacted1 ~ season*SW_mig + (1 | species_code), data = migrants_2019)
+mig.stat.lmer <- lmer(modified_rPI ~ season*SW_mig + (1 | species_code), data = migrants_2019)
 summary(mig.stat.lmer)
 AIC(mig.stat.lmer)
 anova(mig.stat.lmer)
@@ -31,43 +31,43 @@ anova(mig.stat.lmer)
 #boxplot suggests outliers
 #log transformation did little to help any assumptions
 bxp <- ggboxplot(
-  migrants_2019, x = "season", y = "IHM",
+  migrants_2019, x = "season", y = "modified_rPI",
   color = "SW_mig", palette = "jco"
 )
 bxp
 
 outliers.mig <- migrants_2019 %>%
   group_by(season, SW_mig) %>%
-  identify_outliers(IHM)
-#9 outliers
+  identify_outliers(modified_rPI)
+#24 outliers
 
 #normality
 #using qq since sample size relatively large
-ggqqplot(migrants_2019, "IHM", ggtheme = theme_bw()) +
+ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
   facet_grid(season ~ SW_mig)
-#looks good
+#looks decent
 
 #homogeneity of variances
 migrants_2019 %>%
   group_by(season) %>%
-  levene_test(IHM ~ SW_mig)
-levene_test(migrants_2019, IHM~SW_mig*season)
-#all significant
-ggplot(migrants_2019, aes(y=IHM, x=SW_mig))+
+  levene_test(modified_rPI ~ SW_mig)
+levene_test(migrants_2019, modified_rPI~SW_mig*season)
+#not bad
+ggplot(migrants_2019, aes(y=modified_rPI, x=SW_mig))+
   geom_point() +
   facet_wrap(~season)
-#definitely greater variance in neotropical migrants, but not too bad
+#not too bad
 #LMM fairly robust
 
 #homogeneity of covariances
-box_m(migrants_2019[, "IHM", drop = FALSE], migrants_2019$SW_mig)
-#assumption violated, but close - difficult to rememdy, should be relatively robust
+box_m(migrants_2019[, "modified_rPI", drop = FALSE], migrants_2019$SW_mig)
+#not bad, should be relatively robust
 
 ##post-hoc comparisons
 
 mig.tukey.table <- emmeans(mig.stat.lmer, list(pairwise ~ SW_mig*season), adjust = "holm")
 summary(mig.tukey.table)
-write.table(mig.tukey.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/mig-holm.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(mig.tukey.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/rPI-mig-holm.txt", sep = ",", quote = FALSE, row.names = F)
 
 #marginal and conditional Rsq, AIC
 #install.packages("piecewiseSEM")
@@ -115,9 +115,9 @@ fig1a <- ggplot(aes(y = IHM, x = season), data = migrants_2019) +
 mypal <- pal_npg("nrc", alpha = 1)(4)
 int.plota <- migrants_2019 %>%
   group_by(SW_mig, season) %>%
-  dplyr::summarize(mean = mean(modified),
-                   sd = sd(impacted1),
-                   se = sd(impacted1)/sqrt(length(impacted1)))
+  dplyr::summarize(mean = mean(modified_rPI),
+                   sd = sd(modified_rPI),
+                   se = sd(modified_rPI)/sqrt(length(modified_rPI)))
 
 #int.plot1 <- int.plota %>% 
 #  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
@@ -125,11 +125,11 @@ int.plota <- migrants_2019 %>%
 fig1a <- ggplot(int.plota, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
 geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
- # geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=1,
-  #              position=position_dodge(0.6)) +
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
+                position=position_dodge(0.6)) +
 theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean IHM") +
+  ylab("Mean Modified rPI") +
  # geom_hline(yintercept=1, linetype="dashed", 
  #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -262,7 +262,7 @@ dev.off()
 
 
 #### diet ####
-load("data_outputs/IHM_migrants_2019.RData")
+load("data_outputs/rPI_migrants_2019.RData")
 
 #migrants$diet2 <- factor(migrants$diet2, levels=c("G","F","O","C","I"))
 
@@ -271,7 +271,7 @@ load("data_outputs/IHM_migrants_2019.RData")
 #anova(mig.diet.lme)
 #summary(aov(SHM ~ season*diet2 + Error(species_code), data = migrants))
 #lme4
-mig.diet.lmer <- lmer(IHM ~ season*diet2 + (1 | species_code), data = migrants_2019)
+mig.diet.lmer <- lmer(modified_rPI ~ season*diet2 + (1 | species_code), data = migrants_2019)
 summary(mig.diet.lmer)
 anova(mig.diet.lmer)
 library(piecewiseSEM)
@@ -288,18 +288,18 @@ AIC(mig.diet.lmer)
 #boxplot suggests outliers, not too bad
 #particularly in insectivores postbreeding
 bxp <- ggboxplot(
-  migrants_2019, x = "season", y = "IHM",
+  migrants_2019, x = "season", y = "modified_rPI",
   color = "diet2", palette = "jco"
 )
 bxp
 
-outliers.mig <- migrants_2019 %>%
+outliers.diet <- migrants_2019 %>%
   group_by(season, diet2) %>%
-  identify_outliers(IHM) # 21 outliers
+  identify_outliers(modified_rPI) # 26 outliers
 
 #normality
 #using qq since sample size relatively large
-ggqqplot(migrants_2019, "IHM", ggtheme = theme_bw()) +
+ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
   facet_grid(season ~ diet2)
 #pretty decent
 
@@ -307,15 +307,15 @@ ggqqplot(migrants_2019, "IHM", ggtheme = theme_bw()) +
 #homogeneity of variances
 migrants_2019 %>%
   group_by(season) %>%
-  levene_test(IHM ~ diet2)
+  levene_test(modified_rPI ~ diet2)
 #good except nonbreeding
-ggplot(migrants_2019, aes(y=IHM, x=diet2))+
+ggplot(migrants_2019, aes(y=modified_rPI, x=diet2))+
   geom_point() +
   facet_wrap(~season)
 #greater in insectivores
 
 #homogeneity of covariances
-box_m(migrants_2019[, "IHM", drop = FALSE], migrants_2019$diet2)
+box_m(migrants_2019[, "modified_rPI", drop = FALSE], migrants_2019$diet2)
 #pretty close - difficult to remedy, relatively robust
 
 #mig.diet.lme2 <- lme(SHM ~ season*diet2, data = migrants_diet2, random = ~ 1 | species_code)
@@ -329,7 +329,7 @@ box_m(migrants_2019[, "IHM", drop = FALSE], migrants_2019$diet2)
 #### post-hoc comparisons ####
 mig.diet.tukey.table <- emmeans(mig.diet.lmer, list(pairwise ~ diet2*season), adjust = "holm")
 summary(mig.diet.tukey.table)
-write.table(mig.diet.tukey.table$`pairwise differences of diet2, season`, file = "fig_outputs/diet-tuk-rpi.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(mig.diet.tukey.table$`pairwise differences of diet2, season`, file = "fig_outputs/rPI_diet_holm.txt", sep = ",", quote = FALSE, row.names = F)
 #mig.diet.bon.table <- emmeans(mig.diet.lmer, list(pairwise ~ diet2*season), adjust = "bonferroni")
 #write.table(mig.bon.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/mig-bon.txt", sep = ",", quote = FALSE, row.names = F)
 #insectivores higher in the breeding season that other seasons
@@ -374,18 +374,18 @@ fig2a
 mypal <- pal_npg("nrc", alpha = 1)(5)
 mig.diet.plot <- migrants_2019 %>%
   group_by(diet2, season) %>%
-  dplyr::summarize(mean = mean(modified),
-                   sd = sd(impacted1),
-                   se = sd(impacted1)/sqrt(length(impacted1)))
+  dplyr::summarize(mean = mean(modified_rPI),
+                   sd = sd(modified_rPI),
+                   se = sd(modified_rPI)/sqrt(length(modified_rPI)))
 
 fig2a <- ggplot(mig.diet.plot, aes(x = season, y = mean, group = diet2, col = diet2)) +
   geom_line(aes(group=diet2),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
-  #geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
-               # position=position_dodge(0.6)) +
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
+                position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean IHM") +
+  ylab("Mean Modified rPI") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -508,7 +508,7 @@ dev.off()
 
 
 #### foraging ####
-load("data_outputs/IHM_migrants_2019.RData")
+load("data_outputs/rPI_migrants_2019.RData")
 
 #migrants$diet2 <- factor(migrants$diet2, levels=c("G","F","O","C","I"))
 
@@ -517,7 +517,7 @@ load("data_outputs/IHM_migrants_2019.RData")
 #anova(mig.diet.lme)
 #summary(aov(SHM ~ season*diet2 + Error(species_code), data = migrants))
 #lme4
-mig.for.lmer <- lmer(impacted1 ~ season*sw_foraging + (1 | species_code), data = migrants_2019)
+mig.for.lmer <- lmer(modified_rPI ~ season*sw_foraging + (1 | species_code), data = migrants_2019)
 summary(mig.for.lmer)
 anova(mig.for.lmer)
 AIC(mig.for.lmer)
@@ -529,33 +529,33 @@ AIC(mig.for.lmer)
 #boxplot suggests outliers
 #particularly in insectivores postbreeding
 bxp <- ggboxplot(
-  migrants_2019, x = "season", y = "IHM",
+  migrants_2019, x = "season", y = "modified_rPI",
   color = "sw_foraging", palette = "jco"
 )
 bxp
 
 outliers.mig <- migrants_2019 %>%
   group_by(season, sw_foraging) %>%
-  identify_outliers(IHM)
+  identify_outliers(modified_rPI)#26 outliers
 
 #normality
 #using qq since sample size relatively large
-ggqqplot(migrants_2019, "IHM", ggtheme = theme_bw()) +
+ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
   facet_grid(season ~ sw_foraging)
 #mostly ok 
 
 #homogeneity of variances
 migrants_2019 %>%
   group_by(season) %>%
-  levene_test(IHM ~ sw_foraging)
+  levene_test(modified_rPI ~ sw_foraging)
 #assumptions met
-ggplot(migrants_2019, aes(y=IHM, x=sw_foraging))+
+ggplot(migrants_2019, aes(y=modified_rPI, x=sw_foraging))+
   geom_point() +
   facet_wrap(~season)
 
 
 #homogeneity of covariances
-box_m(migrants_2019[, "IHM", drop = FALSE], migrants_2019$sw_foraging)
+box_m(migrants_2019[, "modified_rPI", drop = FALSE], migrants_2019$sw_foraging)
 #assumption met
 
 #run without ground hawkers and bark foragers
@@ -567,7 +567,7 @@ box_m(migrants_2019[, "IHM", drop = FALSE], migrants_2019$sw_foraging)
 #anova(mig.diet.lme2)
 #summary(aov(SHM ~ season*diet2 + Error(species_code), data = migrants))
 #lme4
-mig.for.lmer <- lmer(IHM ~ season*sw_foraging + (1 | species_code), data = migrants)
+mig.for.lmer <- lmer(modified_rPI ~ season*sw_foraging + (1 | species_code), data = migrants)
 summary(mig.for.lmer)
 
 ##post-hoc comparisons
@@ -601,9 +601,9 @@ fig3a
 mypal <- pal_npg("nrc", alpha = 1)(6)
 mig.for.plot <- migrants_2019 %>%
   group_by(sw_foraging, season) %>%
-  dplyr::summarize(mean = mean(impacted1),
-                   sd = sd(impacted1),
-                   se = sd(impacted1)/sqrt(length(impacted1)))
+  dplyr::summarize(mean = mean(modified_rPI),
+                   sd = sd(modified_rPI),
+                   se = sd(modified_rPI)/sqrt(length(modified_rPI)))
 
 fig3a <- ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
   geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
@@ -612,7 +612,7 @@ fig3a <- ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean IHM") +
+  ylab("Mean Modified rPI") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +

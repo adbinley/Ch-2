@@ -100,6 +100,7 @@ rpis_id_breeding <- rpis_id
 setwd("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021")
 
 #save(rpis_id_breeding, file = "data_outputs/rpis_breeding_2019.RData")
+load("data_outputs/rpis_breeding_2019.RData")
 
 #now need to decide which landcover classes are "natural"
 #and which are "impacted"
@@ -123,19 +124,26 @@ rpis_cover <- rpis_id_breeding %>%
          impacted = rowSums(select(., all_of(impacted))),
          ratio = (impacted+1)/(natural+1))
 
+#new - rescale for only modified vs natural, instead of using ratio
+#change for ease of comprehension, same basic relationship
+rpis_cover <- rpis_cover %>%
+  mutate(modified = impacted/(impacted+natural),
+         forest = 1-modified)
+
 breeding <- rpis_cover %>%
   group_by(species_code)%>%
-  dplyr::summarize(IHM = mean(ratio, na.rm = TRUE),
-                   IHM_var = var(ratio, na.rm = TRUE),
-                   natural1 = mean(natural, na.rm = TRUE),
-                   nat_var = var(natural, na.rm = TRUE),
-                   impacted1 = mean(impacted, na.rm = TRUE),
-                   imp_var = var(impacted, na.rm = TRUE))
+  dplyr::summarize(modified_rPI = mean(modified, na.rm = TRUE),
+                   modrPI_var = var(modified, na.rm = TRUE),
+                   natural_rPI = mean(forest, na.rm = TRUE),
+                   natrPI_var = var(forest, na.rm = TRUE))#,
+                   #impacted1 = mean(impacted, na.rm = TRUE),
+                   #imp_var = var(impacted, na.rm = TRUE))
 
 load("data/species_basic.RData")
 
 breeding_rpi_data <- inner_join(breeding, species_basic, by = "species_code")
-save(breeding_rpi_data, file = "data_outputs/IHM_breeding_rpi_data_2019.RData")
+#save(breeding_rpi_data, file = "data_outputs/IHM_breeding_rpi_data_2019.RData")
+save(breeding_rpi_data, file = "data_outputs/breeding_rpi_data_2019.RData")
 
 ########################################################################################
 
@@ -221,6 +229,7 @@ rpis_id_postbreeding <- rpis_id
 setwd("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021")
 
 #save(rpis_id_postbreeding, file = "data_outputs/rpis_postbreeding_2019.RData")
+load("data_outputs/rpis_postbreeding_2019.RData")
 
 #now need to decide which landcover classes are "natural"
 #and which are "impacted"
@@ -238,25 +247,31 @@ impacted <- c("Forest/Cropland Mosaics PLAND",
               "Herbaceous Croplands PLAND", 
               "Barren PLAND" )
 
-
 rpis_cover <- rpis_id_postbreeding %>%
   mutate(natural = rowSums(select(., all_of(natural))),
          impacted = rowSums(select(., all_of(impacted))),
          ratio = (impacted+1)/(natural+1))
 
+#new - rescale for only modified vs natural, instead of using ratio
+#change for ease of comprehension, same basic relationship
+rpis_cover <- rpis_cover %>%
+  mutate(modified = impacted/(impacted+natural),
+         forest = 1-modified)
+
 postbreeding <- rpis_cover %>%
   group_by(species_code)%>%
-  dplyr::summarize(IHM = mean(ratio, na.rm = TRUE),
-                   IHM_var = var(ratio, na.rm = TRUE),
-                   natural1 = mean(natural, na.rm = TRUE),
-                   nat_var = var(natural, na.rm = TRUE),
-                   impacted1 = mean(impacted, na.rm = TRUE),
-                   imp_var = var(impacted, na.rm = TRUE))
+  dplyr::summarize(modified_rPI = mean(modified, na.rm = TRUE),
+                   modrPI_var = var(modified, na.rm = TRUE),
+                   natural_rPI = mean(forest, na.rm = TRUE),
+                   natrPI_var = var(forest, na.rm = TRUE))#,
+#impacted1 = mean(impacted, na.rm = TRUE),
+#imp_var = var(impacted, na.rm = TRUE))
 
 load("data/species_basic.RData")
 
 postbreeding_rpi_data <- inner_join(postbreeding, species_basic, by = "species_code")
-save(postbreeding_rpi_data, file = "data_outputs/IHM_postbreeding_rpi_data_2019.RData")
+#save(postbreeding_rpi_data, file = "data_outputs/IHM_postbreeding_rpi_data_2019.RData")
+save(postbreeding_rpi_data, file = "data_outputs/postbreeding_rpi_data_2019.RData")
 
 ########################################################################################
 
@@ -342,6 +357,7 @@ rpis_id_nonbreeding <- rpis_id
 setwd("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021")
 
 #save(rpis_id_nonbreeding, file = "data_outputs/rpis_nonbreeding_2019.RData")
+load("data_outputs/rpis_nonbreeding_2019.RData")
 
 #now need to decide which landcover classes are "natural"
 #and which are "impacted"
@@ -365,19 +381,27 @@ rpis_cover <- rpis_id_nonbreeding %>%
          impacted = rowSums(select(., all_of(impacted))),
          ratio = (impacted+1)/(natural+1))
 
+#new - rescale for only modified vs natural, instead of using ratio
+#change for ease of comprehension, same basic relationship
+rpis_cover <- rpis_cover %>%
+  mutate(modified = impacted/(impacted+natural),
+         forest = 1-modified)
+
 nonbreeding <- rpis_cover %>%
   group_by(species_code)%>%
-  dplyr::summarize(IHM = mean(ratio, na.rm = TRUE),
-                   IHM_var = var(ratio, na.rm = TRUE),
-                   natural1 = mean(natural, na.rm = TRUE),
-                   nat_var = var(natural, na.rm = TRUE),
-                   impacted1 = mean(impacted, na.rm = TRUE),
-                   imp_var = var(impacted, na.rm = TRUE))
+  dplyr::summarize(modified_rPI = mean(modified, na.rm = TRUE),
+                   modrPI_var = var(modified, na.rm = TRUE),
+                   natural_rPI = mean(forest, na.rm = TRUE),
+                   natrPI_var = var(forest, na.rm = TRUE))#,
+#impacted1 = mean(impacted, na.rm = TRUE),
+#imp_var = var(impacted, na.rm = TRUE))
+
 
 load("data/species_basic.RData")
 
 nonbreeding_rpi_data <- inner_join(nonbreeding, species_basic, by = "species_code")
-save(nonbreeding_rpi_data, file = "data_outputs/IHM_nonbreeding_rpi_data_2019.RData")
+#save(nonbreeding_rpi_data, file = "data_outputs/IHM_nonbreeding_rpi_data_2019.RData")
+save(nonbreeding_rpi_data, file = "data_outputs/nonbreeding_rpi_data_2019.RData")
 
 ########################################################################################
 
@@ -463,6 +487,7 @@ rpis_id_prebreeding <- rpis_id
 setwd("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021")
 
 #save(rpis_id_prebreeding, file = "data_outputs/rpis_prebreeding_2019.RData")
+load("data_outputs/rpis_prebreeding_2019.RData")
 
 #now need to decide which landcover classes are "natural"
 #and which are "impacted"
@@ -486,34 +511,38 @@ rpis_cover <- rpis_id_prebreeding %>%
          impacted = rowSums(select(., all_of(impacted))),
          ratio = (impacted+1)/(natural+1))
 
+#new - rescale for only modified vs natural, instead of using ratio
+#change for ease of comprehension, same basic relationship
+rpis_cover <- rpis_cover %>%
+  mutate(modified = impacted/(impacted+natural),
+         forest = 1-modified)
+
 prebreeding <- rpis_cover %>%
   group_by(species_code)%>%
-  dplyr::summarize(IHM = mean(ratio, na.rm = TRUE),
-                   IHM_var = var(ratio, na.rm = TRUE),
-                   natural1 = mean(natural, na.rm = TRUE),
-                   nat_var = var(natural, na.rm = TRUE),
-                   impacted1 = mean(impacted, na.rm = TRUE),
-                   imp_var = var(impacted, na.rm = TRUE))
+  dplyr::summarize(modified_rPI = mean(modified, na.rm = TRUE),
+                   modrPI_var = var(modified, na.rm = TRUE),
+                   natural_rPI = mean(forest, na.rm = TRUE),
+                   natrPI_var = var(forest, na.rm = TRUE))#,
+#impacted1 = mean(impacted, na.rm = TRUE),
+#imp_var = var(impacted, na.rm = TRUE))
 
 load("data/species_basic.RData")
 
 prebreeding_rpi_data <- inner_join(prebreeding, species_basic, by = "species_code")
-save(prebreeding_rpi_data, file = "data_outputs/IHM_prebreeding_rpi_data_2019.RData")
+#save(prebreeding_rpi_data, file = "data_outputs/IHM_prebreeding_rpi_data_2019.RData")
+save(prebreeding_rpi_data, file = "data_outputs/prebreeding_rpi_data_2019.RData")
 
 #create migrants data
-load("data_outputs/IHM_breeding_rpi_data_2019.RData")
+load("data_outputs/breeding_rpi_data_2019.RData")
 breeding_rpi_data$season <- rep("breeding", length(breeding_rpi_data$species_code))
-load("data_outputs/IHM_postbreeding_rpi_data_2019.RData")
+load("data_outputs/postbreeding_rpi_data_2019.RData")
 postbreeding_rpi_data$season <- rep("postbreeding", length(postbreeding_rpi_data$species_code))
-load("data_outputs/IHM_nonbreeding_rpi_data_2019.RData")
+load("data_outputs/nonbreeding_rpi_data_2019.RData")
 nonbreeding_rpi_data$season <- rep("nonbreeding", length(nonbreeding_rpi_data$species_code))
-load("data_outputs/IHM_prebreeding_rpi_data_2019.RData")
+load("data_outputs/prebreeding_rpi_data_2019.RData")
 prebreeding_rpi_data$season <- rep("prebreeding", length(prebreeding_rpi_data$species_code))
 
 migrants_2019 <- rbind(breeding_rpi_data,postbreeding_rpi_data, nonbreeding_rpi_data,prebreeding_rpi_data)
 migrants_2019$season <- factor(migrants_2019$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-save(migrants_2019, file = "data_outputs/IHM_migrants_2019.RData")
+save(migrants_2019, file = "data_outputs/rPI_migrants_2019.RData")
 
-
-#do resident nonbreeding, create residents data
-#create FAC data
