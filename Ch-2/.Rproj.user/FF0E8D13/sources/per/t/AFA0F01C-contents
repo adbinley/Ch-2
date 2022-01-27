@@ -180,6 +180,7 @@ all_data4_mig <- all_data4_mig %>%
 all_data4_mig$season <- factor(all_data4_mig$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 all_data4_mig$SW_mig <- factor(all_data4_mig$SW_mig, levels=c("N","S","NR","R"))
 save(all_data4_mig, file = "data_outputs/all_data4_mig.RData")
+load("data_outputs/all_data4_mig.RData")
 
 #all_data4$log_ratio <- log(all_data4$ratio)
 
