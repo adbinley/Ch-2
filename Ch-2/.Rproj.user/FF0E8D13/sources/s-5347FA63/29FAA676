@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1644507037914.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "29FAA676",
+    "lastKnownWriteTime" : 18296075357585509,
+    "last_content_update" : 1644507037914,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "C7D9278F",
+        "caption" : "stacked_long3",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=stacked_long3&cache_key=C7D9278F",
+        "displayedObservations" : 2,
+        "environment" : "",
+        "object" : "stacked_long3",
+        "preview" : 0,
+        "totalObservations" : 2,
+        "variables" : 2
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

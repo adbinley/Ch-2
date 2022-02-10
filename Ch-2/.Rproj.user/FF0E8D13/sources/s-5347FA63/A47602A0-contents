@@ -1,17 +1,25 @@
 library(ebirdst)
 library(sf)
 library(tidyverse)
+library(ggpubr)
+library(png)
+library(cowplot)
+library(magick)
+library(ggtext)
 
 setwd("E:/eBird/data/raw/STEM")
 path <- "magwar-ERD2019-STATUS-20200930-3ed92d66"
 
-load("data_outputs/rpis_breeding_2019.RData")
+load("D:/Allison/Github_Projects/Ch-2/Ch-2/data_outputs/rpis_breeding_2019.RData")
+magwar <- rpis_id_breeding %>%
+  filter(species_code=="magwar")
 
 stixels <- load_stixels(path)
 
 stixels1 <- stixels %>%
   filter(stixel_id %in% magwar$stixel_id)
 
+set.seed(45)
 stixels_random <- sample_n(stixels1, 10, replace=F)
 
 stixels2 <- stixelize(stixels_random)
@@ -39,7 +47,8 @@ plot(ne_country_lines, add=T)
 
 setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
 
-save(list=c("stixels2","ne_land","ne_country_lines"), file = "appendix_plots/appC1.RData")
+#save(list=c("stixels2","ne_land","ne_country_lines"), file = "appendix_plots/appC1.RData")
+#forgot to set seed for these data, using above code now instead
 
 colnames(rpis_id_breeding)
 
@@ -51,14 +60,12 @@ plot(ne_land, add=T)
 plot(st_geometry(stixels3), col = "yellow", border= 6, add=T)
 
 
-library(png)
-library(cowplot)
-library(magick)
+
 map1 <- ggplot()+
   geom_sf(data= ne_land)+
   geom_sf(data= ne_country_lines)+
   geom_sf(data=stixels2, fill="#1F968BFF", alpha = 0.5)+
-  geom_sf(data = stixels3, col = "#1F968BFF", fill = "yellow")+
+  geom_sf(data = stixels3, col = "orange", fill = "yellow")+
   coord_sf(xlim=c(-150,-25))+
   theme_classic()
 
@@ -67,82 +74,179 @@ map1
 map2 <- ggdraw(map1) + 
   draw_image("appendix_plots/mawa3.png", x = 0.95, y = 0.1, hjust = 1, vjust = 0, width = 0.25, height = 0.25)
 
+png("fig_outputs/map.png", height = 9, width = 11.5, units = "in",res=300)
+map2
+dev.off()
+
   
-geom_sf(data= ne_country_lines)+
-  geom_sf(data=ne_land)+
-  geom_sf(st_geometry(stixels3), col = "yellow", border= 6)
+#geom_sf(data= ne_country_lines)+
+#  geom_sf(data=ne_land)+
+#  geom_sf(st_geometry(stixels3), col = "yellow", border= 6)
 
 stacked <- rpis_id_breeding%>%
-  filter(stixel_id == "63-199.6-NSSWNEEN",#"48-177-NSSNSW",
+  filter(stixel_id == "70-168-NSSWEWWN",#"63-199.6-NSSWNEEN",#"48-177-NSSNSW",
          species_code=="magwar")%>% #this is the specific stixel pictured on the map
   select(c(6:28))
 
 stacked_long <- pivot_longer(stacked, 1:23, names_to="lc_class", values_to = "PI")
 stacked_long$x <- rep("x", length(stacked_long$lc_class))
+stacked_long1 <- filter(stacked_long)%>%
+  filter(PI > 0)
 
-stacked_long$lc_class <- factor(stacked_long$lc_class, levels=c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests PLAND",                
-                                                                "Deciduous Needleleaf Forests PLAND","Deciduous Broadleaf Forests PLAND",                
+stacked_long$lc_class <- factor(stacked_long$lc_class, levels=c("Evergreen Needleleaf Forests PLAND",
+                                                                "Deciduous Needleleaf Forests PLAND",
+                                                                "Deciduous Broadleaf Forests PLAND",
                                                                 "Mixed Broadleaf/Needleleaf Forests PLAND",
-                                                                "Mixed Broadleaf Evergreen/Deciduous Forests PLAND",
-                                                                "Open Forests PLAND", "Woody Wetlands PLAND", #8 natural
-                                                                "Forest/Cropland Mosaics PLAND",                    
-                                                                "Natural Herbaceous/Croplands Mosaics PLAND",       
-                                                                "Herbaceous Croplands PLAND", 
-                                                                "Barren PLAND", # 4 modified
-                                                                "Tidal Mudflats PLAND","Permanent Snow and Ice PLAND","Sparse Forests PLAND",
-                                                                "Unclassified PLAND","Dense Herbaceous PLAND","Sparse Herbaceous PLAND",
-                                                                "Dense Shrublands PLAND","Shrubland/Grassland Mosaics PLAND","Sparse Shrublands PLAND",
-                                                                "Herbaceous Wetlands PLAND","Tundra PLAND" # 11 other
+                                                                "Open Forests PLAND",
+                                                                "Woody Wetlands PLAND", #natural forest
+                                                                "Forest/Cropland Mosaics PLAND",
+                                                                "Herbaceous Croplands PLAND", #modified
+                                                                "Sparse Forests PLAND",
+                                                                "Dense Herbaceous PLAND",
+                                                                "Herbaceous Wetlands PLAND"#other
                                                                 ))
 
 
-stacked_long1 <- stacked_long %>%
-  filter(PI >0) #6 natural, 3 modified, 2 other
+#stacked_long1 <- stacked_long %>%
+#  filter(PI >0) #6 natural, 3 modified, 2 other
 
-clrs <- c("#062891","#0541C2","#1097F7","#051F72","#04528A","#6c8EF8","#FEE227","#FDC12A","#FDA50F","#616161","#C1C1C1")
-stacked_long1$lc_class <- factor(stacked_long1$lc_class, levels=c("Evergreen Needleleaf Forests PLAND",               
-                                 "Deciduous Needleleaf Forests PLAND","Deciduous Broadleaf Forests PLAND",                
-                                 "Mixed Broadleaf/Needleleaf Forests PLAND",
-                                 "Open Forests PLAND", "Woody Wetlands PLAND", #8 natural
-                                 "Forest/Cropland Mosaics PLAND",                    
-                                 "Herbaceous Croplands PLAND", 
-                                 "Barren PLAND", # 4 modified
-                                 "Sparse Forests PLAND",
-                                 "Dense Herbaceous PLAND"))
+#6 natural, 2 modified, 3 other
 
-plot_main <- ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
+clrs <- c("#062891","#0541C2","#1097F7","#051F72","#04528A","#6c8EF8","#FEE227","#FDA50F","#616161","#C1C1C1","9A9A9A") #"#FDC12A",
+#stacked_long1$lc_class <- factor(stacked_long1$lc_class, levels=c("Evergreen Needleleaf Forests PLAND",               
+ #                                "Deciduous Needleleaf Forests PLAND","Deciduous Broadleaf Forests PLAND",                
+ #                                "Mixed Broadleaf/Needleleaf Forests PLAND",
+ #                                "Open Forests PLAND", "Woody Wetlands PLAND", #8 natural
+ #                                "Forest/Cropland Mosaics PLAND",                    
+ #                                "Herbaceous Croplands PLAND", 
+ #                                "Barren PLAND", # 4 modified
+ #                                "Sparse Forests PLAND",
+ #                                "Dense Herbaceous PLAND"))
+
+#plot_main <- ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
+#  geom_bar(position="fill", stat="identity")+
+#  scale_fill_manual(values= clrs)+
+#  theme_classic(base_family = "serif", base_size = 18)+
+#  theme(axis.ticks.x = element_blank(),
+#        axis.text.x = element_blank())+
+#  xlab("")+
+#  ylab("Relative Predictor Importance")+
+#  labs(fill="Land-Cover Class")
+stacked_long1$lc_class <- factor(stacked_long1$lc_class, levels=c("Evergreen Needleleaf Forests PLAND",
+                                                                  "Deciduous Needleleaf Forests PLAND",
+                                                                  "Deciduous Broadleaf Forests PLAND",
+                                                                  "Mixed Broadleaf/Needleleaf Forests PLAND",
+                                                                  "Open Forests PLAND",
+                                                                  "Woody Wetlands PLAND", #natural forest
+                                                                  "Forest/Cropland Mosaics PLAND",
+                                                                  "Herbaceous Croplands PLAND", #modified
+                                                                  "Sparse Forests PLAND",
+                                                                  "Dense Herbaceous PLAND",
+                                                                  "Herbaceous Wetlands PLAND"#other
+                                                                 ))
+
+
+PI <- ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
   geom_bar(position="fill", stat="identity")+
-  scale_fill_manual(values= clrs)+
+  scale_fill_manual(name = "Land Cover Class",values= clrs,
+                    labels = c("Evergreen Needleleaf Forests",
+                               "Deciduous Needleleaf Forests",
+                               "Deciduous Broadleaf Forests",
+                               "Mixed Broadleaf/Needleleaf Forests",
+                               "Open Forests",
+                               "Woody Wetlands", #natural forest
+                               "Forest/Cropland Mosaics",
+                               "Herbaceous Croplands", #modified
+                               "Sparse Forests",
+                               "Dense Herbaceous",
+                               "Herbaceous Wetlands"#other
+                               ))+
+  theme_classic(base_family = "serif", base_size = 18)+
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "left")+
+  xlab("")+
+  ylab("Predictor Importance")
+
+png("fig_outputs/PI.png", height = 9, width = 11.5, units = "in",res=300)
+PI
+dev.off()
+
+natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests PLAND",                
+             "Deciduous Needleleaf Forests PLAND","Deciduous Broadleaf Forests PLAND",                
+             "Mixed Broadleaf/Needleleaf Forests PLAND",
+             "Mixed Broadleaf Evergreen/Deciduous Forests PLAND",
+             "Open Forests PLAND", "Woody Wetlands PLAND") 
+
+
+impacted <- c("Forest/Cropland Mosaics PLAND",                    
+              "Natural Herbaceous/Croplands Mosaics PLAND",       
+              "Herbaceous Croplands PLAND", 
+              "Barren PLAND" )
+
+
+stacked_long2 <- stacked_long1 %>%
+  filter(lc_class %in% natural | lc_class %in% impacted)%>%
+  mutate(PI2 = PI/sum(PI),
+         state=ifelse(lc_class %in% natural, "natural","modified"))
+
+#clrs1 <- c("#062891","#0541C2","#1097F7","#051F72","#04528A","#6c8EF8","#FEE227","#FDA50F")#,"#616161","#C1C1C1","9A9A9A") #"#FDC12A",
+
+stacked_long3 <- stacked_long2 %>%
+  group_by(state)%>%
+  summarise(rPI = sum(PI2))
+
+stacked_long3$x <- rep("x",length(stacked_long3$state))
+
+#ggplot(stacked_long2, aes(x=x, y=PI, fill = lc_class))+
+#  geom_bar(position="fill", stat="identity")+
+#  scale_fill_manual(name = "Land Cover Class",values= clrs1,
+#                    labels = c("Evergreen Needleleaf Forests",
+#                               "Deciduous Needleleaf Forests",
+#                               "Deciduous Broadleaf Forests",
+#                               "Mixed Broadleaf/Needleleaf Forests",
+#                               "Open Forests",
+#                               "Woody Wetlands", #natural forest
+#                               "Forest/Cropland Mosaics",
+#                               "Herbaceous Croplands", #modified
+#                               "Sparse Forests"
+#                    ))+
+#  theme_classic(base_family = "serif", base_size = 18)+
+#  theme(axis.ticks.x = element_blank(),
+#        axis.text.x = element_blank())+
+#  xlab("")+
+#  ylab("Relative Predictor Importance")
+
+clrs2 <- c("#062891","#FEE227")
+stacked_long3$state <- factor(stacked_long3$state, levels=c("natural","modified"))
+
+rPI <- ggplot(stacked_long3, aes(x=x, y=rPI, fill = state))+
+  geom_bar(position="fill", stat="identity")+
+  scale_fill_manual(name = "Land Cover Class",values= clrs2,
+                    labels = c("Natural", "Modified"
+                    ))+
   theme_classic(base_family = "serif", base_size = 18)+
   theme(axis.ticks.x = element_blank(),
         axis.text.x = element_blank())+
   xlab("")+
   ylab("Relative Predictor Importance")+
-  labs(fill="Land-Cover Class")
+  scale_y_continuous(position = "right")
 
-ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
-  geom_bar(position="fill", stat="identity")+
-  scale_fill_manual(name = "Land Cover Class",values= clrs,
-                    labels = c("Evergreen Needleleaf Forests",               
-                               "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests",                
-                               "Mixed Broadleaf/Needleleaf Forests",
-                               "Open Forests", "Woody Wetlands PLAND", #8 natural
-                               "Forest/Cropland Mosaics",                    
-                               "Herbaceous Croplands", 
-                               "Barren", # 4 modified
-                               "Sparse Forests",
-                               "Dense Herbaceous"))+
-  theme_classic(base_family = "serif", base_size = 18)+
-  theme(axis.ticks.x = element_blank(),
-        axis.text.x = element_blank())+
-  xlab("")+
-  ylab("Relative Predictor Importance")
+png("fig_outputs/rPI.png", height = 9, width = 11.5, units = "in",res=300)
+rPI
+dev.off()
 
-plot_list <- list(map2,rpi_plot)
+plot_list <- list(PI,rPI)
 
-ggarrange(plotlist = plot_list,
+pi_plots <- ggarrange(plotlist = plot_list,
           ncol=2,
-          widths = c(1,2))
+          widths = c(1,1))
+
+png("fig_outputs/pi_plots.png", height = 9, width = 11.5, units = "in",res=300)
+pi_plots
+dev.off()
 
 #pds
 
@@ -201,14 +305,14 @@ lc_classes1 <- c(natural1,modified1)
 
 pds1 <- pds %>%
   filter(predictor %in% lc_classes) %>% #filtered to only our natural and modified land cover class predictors
-  filter(stixel_id == "63-199.6-NSSWNEEN") #filtered to highlighted stixel
+  filter(stixel_id == "70-168-NSSWEWWN") #filtered to highlighted stixel
 
 pds2 <- pds %>%
   filter(predictor %in% lc_classes)
 
 #pd_smooth <- plot_pds(pds2, lc_classes[12], ext = bre_extent)
-data <- ebirdst_subset(pds, bre_extent) %>%
-  filter(predictor == natural[j])
+#data <- ebirdst_subset(pds, bre_extent) %>%
+#  filter(predictor == natural[j])
 
 #### pd plots #### 
 #yes I should have looped it but i didnt so
@@ -220,7 +324,7 @@ pd_plot1 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -234,7 +338,7 @@ pd_plot2 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -249,7 +353,7 @@ pd_plot3 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -264,7 +368,7 @@ pd_plot4 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -279,7 +383,7 @@ pd_plot5 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -294,7 +398,7 @@ pd_plot6 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -309,7 +413,7 @@ pd_plot7 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -324,7 +428,7 @@ pd_plot8 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -339,7 +443,7 @@ pd_plot9 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, col = "#FDC12A", se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -354,7 +458,7 @@ pd_plot10 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, col = "#FDC12A", se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -369,7 +473,7 @@ pd_plot11 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, col = "#FDC12A", se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -384,7 +488,7 @@ pd_plot12 <- ebirdst_subset(pds2, bre_extent) %>%
   ggplot(aes(predictor_value,response))+
   #geom_point(alpha=0.2)+
   geom_smooth(method = "lm", size = 2, col = "#FDC12A", se=F)+
-  geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
   theme_classic(base_size = 12, base_family = "serif")+
   xlab("")+ #Predictor Level
   ylab("")+#Probability Occurrence
@@ -409,6 +513,6 @@ pd_plots <- annotate_figure(pd_plots,
                 left = "Prob. Occurrence",
                 bottom = "Proportion Cover")
 
-png("fig_outputs/pd_plots.png", height = 9, width = 11.5, units = "in",res=300)
+png("fig_outputs/pd_plots.png", height = 12, width = 12, units = "in",res=300)
 pd_plots
 dev.off()
