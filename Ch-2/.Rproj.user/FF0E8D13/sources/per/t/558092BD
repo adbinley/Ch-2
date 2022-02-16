@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1645021764978.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2696148896",
+    "id" : "558092BD",
+    "lastKnownWriteTime" : 1645027721,
+    "last_content_update" : 1645027721346,
+    "path" : "D:/Allison/Github_Projects/Ch-2/Ch-2/land_cover.R",
+    "project_path" : "land_cover.R",
+    "properties" : {
+        "cursorPosition" : "1,18",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
