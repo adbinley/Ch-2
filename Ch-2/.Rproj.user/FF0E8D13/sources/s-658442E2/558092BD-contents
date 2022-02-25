@@ -63,6 +63,34 @@ natural <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests","Decid
 
 nat <- c(11:16,20,21,27)
 mod <- c(25,35,36,1)
+lc <- c(nat,mod)
+
+x <- raster("E:/eBird/data/raw/STEM/bkpwar-ERD2019-STATUS-20201002-1c7c7cf3/srd_raster_template.tif")
+x1 <- projectRaster(x,q2)
+writeRaster(x1, filename = "D:/Allison/Big_data/Ch-2 landcover/base_map_lambert.tif")
+
+#LCCS1
+filter_q <- q %in% lc
+filter_q1 <- clamp(filter_q,lower = 0.5, useValues = F)
+q2 <- mask(q,filter_q1)
+rat <- levels(q2)[[1]]
+rat[["landcover"]] <- c("Barren","Evergreen Needleleaf Forests", "Evergreen Broadleaf Forests",
+                        "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests","Mixed Broadleaf/Needleleaf Forests",
+                        "Mixed Broadleaf Evergreen/Deciduous Forests","Open Forests")
+levels(q2) <- rat
+
+plot(x1, legend=F, col = "black")
+my_col = rev(terrain.colors(n = 8))
+plot(q2, legend = FALSE, col = my_col, add=T)
+legend(x='bottomleft', text.width = 5e6, legend = c("Barren","Evergreen Needleleaf Forests", "Evergreen Broadleaf Forests",
+                                  "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests","Mixed Broadleaf/Needleleaf Forests",
+                                  "Mixed Broadleaf Evergreen/Deciduous Forests","Open Forests"), 
+       fill = my_col)
+
+png("fig_outputs/LCCS1.png", height = 9, width = 11.5, units = "in",res=300)
+LCCS1
+dev.off()
+
 
 rs <- stack(q,r,s)
 
