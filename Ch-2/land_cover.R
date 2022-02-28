@@ -55,11 +55,11 @@ q <- raster("D:/Allison/Big_data/Ch-2 landcover/MCD12Q1.006_LC_Prop1_lambert.tif
 r <- raster("D:/Allison/Big_data/Ch-2 landcover/MCD12Q1.006_LC_Prop2_lambert.tif")
 s <- raster("D:/Allison/Big_data/Ch-2 landcover/MCD12Q1.006_LC_Prop3_lambert.tif")
 
-plot(q, legend = FALSE, col = rev(terrain.colors(12)))
-legend("topright", legend = c("category 1", "category 2", "category 3", "category 4"), fill = rev(terrain.colors(4)))
+#plot(q, legend = FALSE, col = rev(terrain.colors(12)))
+#legend("topright", legend = c("category 1", "category 2", "category 3", "category 4"), fill = rev(terrain.colors(4)))
 
-natural <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests","Deciduous Needleleaf Forests","Deciduous Broadleaf Forests",
-             "Mixed Broadleaf/Needleleaf Forests","Mixed Broadleaf Evergreen/Deciduous Forests","Open Forests")
+#natural <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests","Deciduous Needleleaf Forests","Deciduous Broadleaf Forests",
+#             "Mixed Broadleaf/Needleleaf Forests","Mixed Broadleaf Evergreen/Deciduous Forests","Open Forests")
 
 nat <- c(11:16,20,21,27)
 mod <- c(25,35,36,1)
@@ -73,23 +73,76 @@ writeRaster(x1, filename = "D:/Allison/Big_data/Ch-2 landcover/base_map_lambert.
 filter_q <- q %in% lc
 filter_q1 <- clamp(filter_q,lower = 0.5, useValues = F)
 q2 <- mask(q,filter_q1)
-rat <- levels(q2)[[1]]
-rat[["landcover"]] <- c("Barren","Evergreen Needleleaf Forests", "Evergreen Broadleaf Forests",
-                        "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests","Mixed Broadleaf/Needleleaf Forests",
-                        "Mixed Broadleaf Evergreen/Deciduous Forests","Open Forests")
-levels(q2) <- rat
+writeRaster(q2, filename = "D:/Allison/Big_data/Ch-2 landcover/LCCS1_filtered.tif")
+q2 <- raster("D:/Allison/Big_data/Ch-2 landcover/LCCS1_filtered.tif")
+#rat <- levels(q2)[[1]]
+#rat[["landcover"]] <- c("Barren","Evergreen Needleleaf Forests", "Evergreen Broadleaf Forests",
+#                        "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests","Mixed Broadleaf/Needleleaf Forests",
+ #                       "Mixed Broadleaf Evergreen/Deciduous Forests","Open Forests")
+#levels(q2) <- rat
 
 plot(x1, legend=F, col = "black")
 my_col = rev(terrain.colors(n = 8))
-plot(q2, legend = FALSE, col = my_col, add=T)
-legend(x='bottomleft', text.width = 5e6, legend = c("Barren","Evergreen Needleleaf Forests", "Evergreen Broadleaf Forests",
+my_col1 <- c("#969595",my_col[2:8])
+plot(q2, legend = FALSE, col = my_col1, add=T)
+legend(x='bottomleft', legend = c("Barren","Evergreen Needleleaf Forests", "Evergreen Broadleaf Forests",
                                   "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests","Mixed Broadleaf/Needleleaf Forests",
                                   "Mixed Broadleaf Evergreen/Deciduous Forests","Open Forests"), 
-       fill = my_col)
+       fill = my_col1)
 
 png("fig_outputs/LCCS1.png", height = 9, width = 11.5, units = "in",res=300)
-LCCS1
+plot(x1, legend=F, col = "black")
+plot(q2, legend = FALSE, col = my_col1, add=T)
 dev.off()
+#q3 <- raster("D:/Allison/Big_data/Ch-2 landcover/LCCS1_filtered.tif")
+
+#LCCS2
+r <- raster("D:/Allison/Big_data/Ch-2 landcover/MCD12Q1.006_LC_Prop3_lambert.tif")
+filter_r <- r %in% lc
+filter_r1 <- clamp(filter_r,lower = 0.5, useValues = F)
+r2 <- mask(r,filter_r1)
+unique(r2)
+writeRaster(r2, filename = "D:/Allison/Big_data/Ch-2 landcover/LCCS2_filtered.tif")
+
+x1 <- raster("D:/Allison/Big_data/Ch-2 landcover/base_map_lambert.tif")
+
+plot(x1, legend=F, col = "black")
+my_col = rev(terrain.colors(n = 5))
+my_col1 <- c("#969595",my_col[2:5])
+plot(r2, legend = FALSE, col = my_col1, add=T)
+legend(x='bottomleft', legend = c("Barren", "Open Forests", "Forest/Cropland Mosaics",
+                                  "Natural Herbaceous/Croplands Mosaics","Herbaceous Croplands"), 
+       fill = my_col1)
+
+png("fig_outputs/LCCS2.png", height = 9, width = 11.5, units = "in",res=300)
+plot(x1, legend=F, col = "black")
+plot(r2, legend = FALSE, col = my_col1, add=T)
+dev.off()
+
+#LCCS3
+s <- raster("D:/Allison/Big_data/Ch-2 landcover/MCD12Q1.006_LC_Prop3_lambert.tif")
+filter_s <- s %in% lc
+filter_s1 <- clamp(filter_s,lower = 0.5, useValues = F)
+s2 <- mask(s,filter_s1)
+unique(s2)
+writeRaster(s2, filename = "D:/Allison/Big_data/Ch-2 landcover/LCCS3_filtered.tif")
+
+x1 <- raster("D:/Allison/Big_data/Ch-2 landcover/base_map_lambert.tif")
+
+plot(x1, legend=F, col = "black")
+my_col = rev(terrain.colors(n = 3))
+my_col1 <- c("#969595",my_col[2:3])
+plot(s2, legend = FALSE, col = my_col1, add=T)
+legend(x='bottomleft', legend = c("Barren", "Open Forests", "Woody Wetlands"), 
+       fill = my_col1)
+
+png("fig_outputs/LCCS3.png", height = 9, width = 11.5, units = "in",res=300)
+plot(x1, legend=F, col = "black")
+plot(s2, legend = FALSE, col = my_col1, add=T)
+dev.off()
+
+
+
 
 
 rs <- stack(q,r,s)
