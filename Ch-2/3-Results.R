@@ -18,6 +18,7 @@ library(ggsignif)
 #### Figure 1 ####
 
 load("data_outputs/rPI_migrants_2019.RData")
+load("data_outputs/rPI_migrants_alt.RData")
 
 ##migratory strategy - rPIs
 

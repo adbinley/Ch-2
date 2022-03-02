@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1646239562044.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "E57A41FF",
+    "lastKnownWriteTime" : 3833180308419998817,
+    "last_content_update" : 1646239562044,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "id" : "9d8cef820da44ecabc95a44c55496530",
+        "name" : "breeding_mod_mods",
+        "title" : "breeding_mod_mods"
+    },
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "object_explorer"
+}
