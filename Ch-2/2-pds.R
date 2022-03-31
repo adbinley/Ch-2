@@ -15,7 +15,7 @@ library(ggsci)
 ebirdst_species <- ebirdst_runs %>%
   dplyr::select(c("species_code","run_name"))
 
-my_species <- read.csv("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data/bird_data_v4.csv")
+my_species <- read.csv("data/bird_data_v4.csv")
 my_species <- left_join(my_species, ebirdst_species, by = "species_code")
 
 #my_species <- my_species[1:3,]
@@ -36,8 +36,8 @@ natural <- c("mcd12q1_lccs1_fs_c11_1500_pland",
 
 modified <- c("mcd12q1_lccs2_fs_c25_1500_pland",
               "mcd12q1_lccs2_fs_c35_1500_pland",
-              "mcd12q1_lccs2_fs_c36_1500_pland",
-              "mcd12q1_lccs1_fs_c1_1500_pland")
+              "mcd12q1_lccs2_fs_c36_1500_pland")#,
+              #"mcd12q1_lccs1_fs_c1_1500_pland")
 
 natural1 <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests",                
              "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests",                
@@ -47,8 +47,7 @@ natural1 <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests",
 
 modified1 <- c("Forest/Cropland Mosaics",                    
               "Natural Herbaceous/Croplands Mosaics",       
-              "Herbaceous Croplands", 
-              "Barren" )
+              "Herbaceous Croplands" )
 
 ###############################################################
 
@@ -175,10 +174,12 @@ names(breeding_mod_mods) <- my_species$species_code
 
 breeding_pds1 <- bind_rows(breeding_pds, .id = "species_code")
 
+setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
+
 save(breeding_pds1, 
-     file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/breeding_pds1.RData")
-save(breeding_nat_mods, file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/breeding_nat_mods.RData")
-save(breeding_mod_mods, file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/breeding_mod_mods.RData")
+     file = "data_outputs/breeding_pds1_nobarren.RData")
+save(breeding_nat_mods, file = "data_outputs/breeding_nat_mods_nobarren.RData")
+save(breeding_mod_mods, file = "data_outputs/breeding_mod_mods_nobarren.RData")
 
 
 #########################################################################################
@@ -306,11 +307,12 @@ names(postbreeding_mod_mods) <- my_species$species_code
 
 postbreeding_pds1 <- bind_rows(postbreeding_pds, .id = "species_code")
 
+setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
 
 save(postbreeding_pds1, 
-     file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/postbreeding_pds1.RData")
-save(postbreeding_nat_mods, file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/postbreeding_nat_mods.RData")
-save(postbreeding_mod_mods, file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/postbreeding_mod_mods.RData")
+     file = "data_outputs/postbreeding_pds1_nobarren.RData")
+save(postbreeding_nat_mods, file = "data_outputs/postbreeding_nat_mods_nobarren.RData")
+save(postbreeding_mod_mods, file = "data_outputs/postbreeding_mod_mods_nobarren.RData")
 
 
 #########################################################################################
@@ -438,11 +440,12 @@ names(nonbreeding_mod_mods) <- my_species$species_code
 
 nonbreeding_pds1 <- bind_rows(nonbreeding_pds, .id = "species_code")
 
+setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
 
 save(nonbreeding_pds1, 
-     file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/nonbreeding_pds1.RData")
-save(nonbreeding_nat_mods, file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/nonbreeding_nat_mods.RData")
-save(nonbreeding_mod_mods, file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/nonbreeding_mod_mods.RData")
+     file = "data_outputs/nonbreeding_pds1_nobarren.RData")
+save(nonbreeding_nat_mods, file = "data_outputs/nonbreeding_nat_mods_nobarren.RData")
+save(nonbreeding_mod_mods, file = "data_outputs/nonbreeding_mod_mods_nobarren.RData")
 
 
 
@@ -571,11 +574,12 @@ names(prebreeding_mod_mods) <- my_species$species_code
 
 prebreeding_pds1 <- bind_rows(prebreeding_pds, .id = "species_code")
 
+setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
 
 save(prebreeding_pds1, 
-     file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/prebreeding_pds1.RData")
-save(prebreeding_nat_mods, file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/prebreeding_nat_mods.RData")
-save(prebreeding_mod_mods, file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/prebreeding_mod_mods.RData")
+     file = "data_outputs/prebreeding_pds1_nobarren.RData")
+save(prebreeding_nat_mods, file = "data_outputs/prebreeding_nat_mods_nobarren.RData")
+save(prebreeding_mod_mods, file = "data_outputs/prebreeding_mod_mods_nobarren.RData")
 
 
 ####################################################################################

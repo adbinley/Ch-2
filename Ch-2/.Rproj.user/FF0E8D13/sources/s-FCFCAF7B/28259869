@@ -5,15 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "4157501648",
+    "hash" : "0",
     "id" : "28259869",
-    "lastKnownWriteTime" : 1643213146,
-    "last_content_update" : 1643213146099,
+    "lastKnownWriteTime" : 1648565097,
+    "last_content_update" : 1648565097381,
     "path" : "D:/Allison/Github_Projects/Ch-2/Ch-2/2-PI_loop_extraction_2019.R",
     "project_path" : "2-PI_loop_extraction_2019.R",
     "properties" : {
-        "cursorPosition" : "534,0",
-        "scrollLine" : "525"
+        "cursorPosition" : "542,85",
+        "scrollLine" : "0"
     },
     "relative_order" : 9,
     "source_on_save" : false,
