@@ -149,7 +149,7 @@ fig1a
 #PDs
 
 load("data/species_basic.RData")
-load("data_outputs/bootstrap_all.RData")
+load("data_outputs/bootstrap_all_nobarren.RData")
 
 all_data <- left_join(bootstrap_all,species_basic,by="species_code")
 
@@ -180,8 +180,8 @@ all_data4_mig <- all_data4_mig %>%
 
 all_data4_mig$season <- factor(all_data4_mig$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 all_data4_mig$SW_mig <- factor(all_data4_mig$SW_mig, levels=c("N","S","NR","R"))
-save(all_data4_mig, file = "data_outputs/all_data4_mig.RData")
-load("data_outputs/all_data4_mig.RData")
+save(all_data4_mig, file = "data_outputs/all_data4_mig_nobarren.RData")
+load("data_outputs/all_data4_mig_nobarren.RData")
 
 #all_data4$log_ratio <- log(all_data4$ratio)
 
@@ -405,7 +405,7 @@ fig2a
 #PDs
 
 load("data/species_basic.RData")
-load("data_outputs/bootstrap_all.RData")
+load("data_outputs/bootstrap_all_nobarren.RData")
 
 all_data <- left_join(bootstrap_all,species_basic,by="species_code")
 
@@ -428,7 +428,7 @@ all_data4_diet <- all_data4_diet %>%
   mutate(SHM = (natural+1)/(modified+1))
 
 all_data4_diet$season <- factor(all_data4_diet$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-save(all_data4_diet, file = "data_outputs/all_data4_diet.RData")
+save(all_data4_diet, file = "data_outputs/all_data4_diet_nobarren.RData")
 
 
 #all_data4$log_ratio <- log(all_data4$ratio)
@@ -633,7 +633,7 @@ fig3a
 #PDs
 
 load("data/species_basic.RData")
-load("data_outputs/bootstrap_all.RData")
+load("data_outputs/bootstrap_all_nobarren.RData")
 
 all_data <- left_join(bootstrap_all,species_basic,by="species_code")
 
@@ -656,7 +656,7 @@ all_data4_for <- all_data4_for %>%
   mutate(SHM = (natural+1)/(modified+1))
 
 all_data4_for$season <- factor(all_data4_for$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-save(all_data4_for, file = "data_outputs/all_data4_for.RData")
+save(all_data4_for, file = "data_outputs/all_data4_for_nobarren.RData")
 
 
 #all_data4$log_ratio <- log(all_data4$ratio)

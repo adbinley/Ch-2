@@ -743,9 +743,9 @@ library(MASS)
 library(matrixStats)
 library(tidyverse)
 
-setwd("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021")
+setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
 
-my_species <- read.csv("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data/bird_data_v4.csv")
+my_species <- read.csv("data/bird_data_v4.csv")
 
 #my_species <- my_species[-c(6,206,229),]
 
@@ -761,8 +761,8 @@ natural1 <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests",
 
 modified1 <- c("Forest/Cropland Mosaics",                    
                "Natural Herbaceous/Croplands Mosaics",       
-               "Herbaceous Croplands", 
-               "Barren" )
+               "Herbaceous Croplands")#, 
+               #"Barren" )
 
 #######################################
 
@@ -777,9 +777,9 @@ modified1 <- c("Forest/Cropland Mosaics",
 #drops <- c("orcori", "rebwoo", "grhowl")
 #my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
 
-load("data_outputs/breeding_pds1.RData")
+load("data_outputs/breeding_pds1_nobarren.RData")
 breeding_pds1$season <- rep("breeding", length(my_species$species_code))
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/breeding_nat_mods.RData")
+load("data_outputs/breeding_nat_mods_nobarren.RData")
 
 #breeding_nat_mods <- breeding_nat_mods[-c(6,206,229)]
 
@@ -841,7 +841,7 @@ species_breeding_nat1 <- bind_rows(species_breeding_nat)
 
 #breeding modified
 
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/breeding_mod_mods.RData")
+load("data_outputs/breeding_mod_mods_nobarren.RData")
 #breeding_mod_mods <- breeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
@@ -901,7 +901,7 @@ species_breeding_mod1 <- bind_rows(species_breeding_mod)
 
 species_breeding_bs <- bind_rows(species_breeding_nat1, species_breeding_mod1)
 
-save(species_breeding_bs, file = "data_outputs/species_breeding_bootstrap.RData")
+save(species_breeding_bs, file = "data_outputs/species_breeding_bootstrap_nobarren.RData")
 
 
 #######################################
@@ -916,9 +916,9 @@ save(species_breeding_bs, file = "data_outputs/species_breeding_bootstrap.RData"
 #drops <- c("orcori", "rebwoo", "grhowl")
 #my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
 
-load("data_outputs/postbreeding_pds1.RData")
+load("data_outputs/postbreeding_pds1_nobarren.RData")
 postbreeding_pds1$season <- rep("postbreeding", length(my_species$species_code))
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/postbreeding_nat_mods.RData")
+load("data_outputs/postbreeding_nat_mods_nobarren.RData")
 
 #postbreeding_nat_mods <- postbreeding_nat_mods[-c(6,206,229)]
 
@@ -980,8 +980,8 @@ species_postbreeding_nat1 <- bind_rows(species_postbreeding_nat)
 
 #postbreeding modified
 
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/postbreeding_mod_mods.RData")
-postbreeding_mod_mods <- postbreeding_mod_mods[-c(6,206,229)]
+load("data_outputs/postbreeding_mod_mods_nobarren.RData")
+#postbreeding_mod_mods <- postbreeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1040,7 +1040,7 @@ species_postbreeding_mod1 <- bind_rows(species_postbreeding_mod)
 
 species_postbreeding_bs <- bind_rows(species_postbreeding_nat1, species_postbreeding_mod1)
 
-save(species_postbreeding_bs, file = "data_outputs/species_postbreeding_bootstrap.RData")
+save(species_postbreeding_bs, file = "data_outputs/species_postbreeding_bootstrap_nobarren.RData")
 
 
 #######################################
@@ -1055,9 +1055,9 @@ save(species_postbreeding_bs, file = "data_outputs/species_postbreeding_bootstra
 #drops <- c("orcori", "rebwoo", "grhowl")
 #my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
 
-load("data_outputs/nonbreeding_pds1.RData")
+load("data_outputs/nonbreeding_pds1_nobarren.RData")
 nonbreeding_pds1$season <- rep("nonbreeding", length(my_species$species_code))
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/nonbreeding_nat_mods.RData")
+load("data_outputs/nonbreeding_nat_mods_nobarren.RData")
 
 #nonbreeding_nat_mods <- nonbreeding_nat_mods[-c(6,206,229)]
 
@@ -1119,7 +1119,7 @@ species_nonbreeding_nat1 <- bind_rows(species_nonbreeding_nat)
 
 #nonbreeding modified
 
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/nonbreeding_mod_mods.RData")
+load("data_outputs/nonbreeding_mod_mods_nobarren.RData")
 #nonbreeding_mod_mods <- nonbreeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
@@ -1179,7 +1179,7 @@ species_nonbreeding_mod1 <- bind_rows(species_nonbreeding_mod)
 
 species_nonbreeding_bs <- bind_rows(species_nonbreeding_nat1, species_nonbreeding_mod1)
 
-save(species_nonbreeding_bs, file = "data_outputs/species_nonbreeding_bootstrap.RData")
+save(species_nonbreeding_bs, file = "data_outputs/species_nonbreeding_bootstrap_nobarren.RData")
 
 
 
@@ -1196,9 +1196,9 @@ save(species_nonbreeding_bs, file = "data_outputs/species_nonbreeding_bootstrap.
 #drops <- c("orcori", "rebwoo", "grhowl")
 #my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
 
-load("data_outputs/prebreeding_pds1.RData")
+load("data_outputs/prebreeding_pds1_nobarren.RData")
 prebreeding_pds1$season <- rep("prebreeding", length(my_species$species_code))
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/prebreeding_nat_mods.RData")
+load("data_outputs/prebreeding_nat_mods_nobarren.RData")
 
 #prebreeding_nat_mods <- prebreeding_nat_mods[-c(6,206,229)]
 
@@ -1260,7 +1260,7 @@ species_prebreeding_nat1 <- bind_rows(species_prebreeding_nat)
 
 #prebreeding modified
 
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/prebreeding_mod_mods.RData")
+load("data_outputs/prebreeding_mod_mods_nobarren.RData")
 #prebreeding_mod_mods <- prebreeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
@@ -1320,7 +1320,7 @@ species_prebreeding_mod1 <- bind_rows(species_prebreeding_mod)
 
 species_prebreeding_bs <- bind_rows(species_prebreeding_nat1, species_prebreeding_mod1)
 
-save(species_prebreeding_bs, file = "data_outputs/species_prebreeding_bootstrap.RData")
+save(species_prebreeding_bs, file = "data_outputs/species_prebreeding_bootstrap_nobarren.RData")
 
 
 #######################################
@@ -1467,18 +1467,18 @@ save(species_nonbreeding_res_bs, file = "data_outputs/species_nonbreeding_res_bo
 
 #################################################################
 
-load("data_outputs/species_breeding_bootstrap.RData")
-load("data_outputs/species_nonbreeding_res_bootstrap.RData")
-load("data/my_species_residents.RData")
+load("data_outputs/species_breeding_bootstrap_nobarren.RData")
+#load("data_outputs/species_nonbreeding_res_bootstrap.RData")
+#load("data/my_species_residents.RData")
 
-resident_bootstrap_all <- bind_rows(species_breeding_bs, species_nonbreeding_res_bs) %>%
+#resident_bootstrap_all <- bind_rows(species_breeding_bs, species_nonbreeding_res_bs) %>%
   filter(species_code %in% my_species_residents$species_code)
 
-save(resident_bootstrap_all, file = "data_outputs/resident_bootstrap_all.RData")
+#save(resident_bootstrap_all, file = "data_outputs/resident_bootstrap_all.RData")
 
-load("data_outputs/species_postbreeding_bootstrap.RData")
-load("data_outputs/species_nonbreeding_bootstrap.RData")
-load("data_outputs/species_prebreeding_bootstrap.RData")
+load("data_outputs/species_postbreeding_bootstrap_nobarren.RData")
+load("data_outputs/species_nonbreeding_bootstrap_nobarren.RData")
+load("data_outputs/species_prebreeding_bootstrap_nobarren.RData")
 
 load("data_outputs/migrants.RData")
 migrant_species <- unique(migrants$species_code)
@@ -1487,20 +1487,20 @@ migrant_species <- unique(migrants$species_code)
 
 
 
-migrants_bootstrap_all <- bind_rows(species_breeding_bs,
-                                    species_postbreeding_bs,
-                                    species_nonbreeding_bs,
-                                    species_prebreeding_bs) %>%
-  filter(species_code %in% migrant_species)
+#migrants_bootstrap_all <- bind_rows(species_breeding_bs,
+#                                    species_postbreeding_bs,
+#                                    species_nonbreeding_bs,
+#                                    species_prebreeding_bs) %>%
+#  filter(species_code %in% migrant_species)
 
-save(migrants_bootstrap_all, file = "data_outputs/migrants_bootstrap_all.RData")
+#save(migrants_bootstrap_all, file = "data_outputs/migrants_bootstrap_all.RData")
 
 bootstrap_all <- bind_rows(species_breeding_bs,
                            species_postbreeding_bs,
                            species_nonbreeding_bs,
                            species_prebreeding_bs)
 
-save(bootstrap_all, file = "data_outputs/bootstrap_all.RData")
+save(bootstrap_all, file = "data_outputs/bootstrap_all_nobarren.RData")
 
 #############################################################################################################
 
