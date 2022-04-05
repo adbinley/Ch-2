@@ -40,7 +40,7 @@ bxp
 outliers.mig <- migrants_2019 %>%
   group_by(season, SW_mig) %>%
   identify_outliers(modified_rPI)
-#24 outliers
+#34 outliers
 
 #normality
 #using qq since sample size relatively large
@@ -53,7 +53,7 @@ migrants_2019 %>%
   group_by(season) %>%
   levene_test(modified_rPI ~ SW_mig)
 levene_test(migrants_2019, modified_rPI~SW_mig*season)
-#not bad
+#fine
 ggplot(migrants_2019, aes(y=modified_rPI, x=SW_mig))+
   geom_point() +
   facet_wrap(~season)
@@ -62,13 +62,14 @@ ggplot(migrants_2019, aes(y=modified_rPI, x=SW_mig))+
 
 #homogeneity of covariances
 box_m(migrants_2019[, "modified_rPI", drop = FALSE], migrants_2019$SW_mig)
-#not bad, should be relatively robust
+#seems fine, should be relatively robust
 
 ##post-hoc comparisons
 
 mig.tukey.table <- emmeans(mig.stat.lmer, list(pairwise ~ SW_mig*season), adjust = "holm")
 summary(mig.tukey.table)
 write.table(mig.tukey.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/rPI-mig-holm.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(mig.tukey.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/rPI-mig-holm_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
 
 #marginal and conditional Rsq, AIC
 #install.packages("piecewiseSEM")
@@ -130,7 +131,7 @@ geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
                 position=position_dodge(0.6)) +
 theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean Modified rPI") +
+  ylab("rPIm") +
  # geom_hline(yintercept=1, linetype="dashed", 
  #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -145,11 +146,19 @@ theme_classic(base_size = 22, base_family = "serif") +
   
 fig1a
 
+png("fig_outputs/Figure1a.png", height = 8, width = 11.5, units = "in",res=300)
+fig1a
+dev.off()
+
+png("fig_outputs/Figure1a_noFCM.png", height = 8, width = 11.5, units = "in",res=300)
+fig1a
+dev.off()
 
 #PDs
 
 load("data/species_basic.RData")
 load("data_outputs/bootstrap_all_nobarren.RData")
+load("data_outputs/bootstrap_all_noFCM.RData")
 
 all_data <- left_join(bootstrap_all,species_basic,by="species_code")
 
@@ -180,8 +189,9 @@ all_data4_mig <- all_data4_mig %>%
 
 all_data4_mig$season <- factor(all_data4_mig$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 all_data4_mig$SW_mig <- factor(all_data4_mig$SW_mig, levels=c("N","S","NR","R"))
-save(all_data4_mig, file = "data_outputs/all_data4_mig_nobarren.RData")
+save(all_data4_mig, file = "data_outputs/all_data4_mig_noFCM.RData")
 load("data_outputs/all_data4_mig_nobarren.RData")
+load("data_outputs/all_data4_mig_noFCM.RData")
 
 #all_data4$log_ratio <- log(all_data4$ratio)
 
@@ -199,6 +209,7 @@ plot(pd_lm)
 mig.tukey.pd.table <- emmeans(pd_aov, list(pairwise ~ SW_mig*season), adjust = "holm")
 summary(mig.tukey.pd.table)
 write.table(mig.tukey.pd.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/mig-holm-pd.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(mig.tukey.pd.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/mig-holm-pd_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
 
 
 #### fig1b ####
@@ -225,7 +236,7 @@ int.plotb <- all_data4_mig %>%
                    sd = sd(SHM),
                    se = sd(SHM)/sqrt(length(SHM)))
 
-fig1b <- ggplot(int.plotb, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
+fig1c <- ggplot(int.plotb, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
   geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
@@ -242,7 +253,13 @@ fig1b <- ggplot(int.plotb, aes(x = season, y = mean, group = SW_mig, col = SW_mi
                      values=mypal)+
   geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
 
+png("fig_outputs/Figure1c.png", height = 8, width = 11.5, units = "in",res=300)
+fig1c
+dev.off()
 
+png("fig_outputs/Figure1c_noFCM.png", height = 8, width = 11.5, units = "in",res=300)
+fig1c
+dev.off()
 
 
 
@@ -265,6 +282,7 @@ dev.off()
 
 #### diet ####
 load("data_outputs/rPI_migrants_2019.RData")
+load("data_outputs/rPI_migrants_alt.RData")
 
 #migrants$diet2 <- factor(migrants$diet2, levels=c("G","F","O","C","I"))
 
@@ -297,7 +315,7 @@ bxp
 
 outliers.diet <- migrants_2019 %>%
   group_by(season, diet2) %>%
-  identify_outliers(modified_rPI) # 26 outliers
+  identify_outliers(modified_rPI) # 25 outliers
 
 #normality
 #using qq since sample size relatively large
@@ -310,7 +328,7 @@ ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
 migrants_2019 %>%
   group_by(season) %>%
   levene_test(modified_rPI ~ diet2)
-#good except nonbreeding
+#good 
 ggplot(migrants_2019, aes(y=modified_rPI, x=diet2))+
   geom_point() +
   facet_wrap(~season)
@@ -318,7 +336,7 @@ ggplot(migrants_2019, aes(y=modified_rPI, x=diet2))+
 
 #homogeneity of covariances
 box_m(migrants_2019[, "modified_rPI", drop = FALSE], migrants_2019$diet2)
-#pretty close - difficult to remedy, relatively robust
+#not great, but relatively robust
 
 #mig.diet.lme2 <- lme(SHM ~ season*diet2, data = migrants_diet2, random = ~ 1 | species_code)
 #summary(mig.diet.lme2)
@@ -332,6 +350,8 @@ box_m(migrants_2019[, "modified_rPI", drop = FALSE], migrants_2019$diet2)
 mig.diet.tukey.table <- emmeans(mig.diet.lmer, list(pairwise ~ diet2*season), adjust = "holm")
 summary(mig.diet.tukey.table)
 write.table(mig.diet.tukey.table$`pairwise differences of diet2, season`, file = "fig_outputs/rPI_diet_holm.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(mig.diet.tukey.table$`pairwise differences of diet2, season`, file = "fig_outputs/rPI_diet_holm_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
+
 #mig.diet.bon.table <- emmeans(mig.diet.lmer, list(pairwise ~ diet2*season), adjust = "bonferroni")
 #write.table(mig.bon.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/mig-bon.txt", sep = ",", quote = FALSE, row.names = F)
 #insectivores higher in the breeding season that other seasons
@@ -387,7 +407,7 @@ fig2a <- ggplot(mig.diet.plot, aes(x = season, y = mean, group = diet2, col = di
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean Modified rPI") +
+  ylab("rPIm") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -400,12 +420,19 @@ fig2a <- ggplot(mig.diet.plot, aes(x = season, y = mean, group = diet2, col = di
                      values=mypal)+
   geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
 
+png("fig_outputs/Figure2a.png", height = 8, width = 11.5, units = "in",res=300)
 fig2a
+dev.off()
+
+png("fig_outputs/Figure2a_noFCM.png", height = 8, width = 11.5, units = "in",res=300)
+fig2a
+dev.off()
 
 #PDs
 
 load("data/species_basic.RData")
 load("data_outputs/bootstrap_all_nobarren.RData")
+load("data_outputs/bootstrap_all_noFCM.RData")
 
 all_data <- left_join(bootstrap_all,species_basic,by="species_code")
 
@@ -428,7 +455,9 @@ all_data4_diet <- all_data4_diet %>%
   mutate(SHM = (natural+1)/(modified+1))
 
 all_data4_diet$season <- factor(all_data4_diet$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-save(all_data4_diet, file = "data_outputs/all_data4_diet_nobarren.RData")
+save(all_data4_diet, file = "data_outputs/all_data4_diet_noFCM.RData")
+load("data_outputs/all_data4_diet_nobarren.RData")
+load("data_outputs/all_data4_diet_noFCM.RData")
 
 
 #all_data4$log_ratio <- log(all_data4$ratio)
@@ -447,6 +476,7 @@ plot(pd_lm)
 diet.tukey.pd.table <- emmeans(pd_aov, list(pairwise ~ diet2*season), adjust = "holm")
 summary(diet.tukey.pd.table)
 write.table(diet.tukey.pd.table$`pairwise differences of diet2, season`, file = "fig_outputs/diet-holm-pd.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(diet.tukey.pd.table$`pairwise differences of diet2, season`, file = "fig_outputs/diet-holm-pd_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
 
 
 #### fig2b ####
@@ -474,7 +504,7 @@ int.plot.diet.b <- all_data4_diet %>%
                    sd = sd(SHM),
                    se = sd(SHM)/sqrt(length(SHM)))
 
-fig2b <- ggplot(int.plot.diet.b, aes(x = season, y = mean, group = diet2, col = diet2)) +
+fig2c <- ggplot(int.plot.diet.b, aes(x = season, y = mean, group = diet2, col = diet2)) +
   geom_line(aes(group=diet2),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
@@ -490,6 +520,16 @@ fig2b <- ggplot(int.plot.diet.b, aes(x = season, y = mean, group = diet2, col = 
                      labels = c("Carnivore","Frugivore","Granivore","Insectivore","Omnivore"),
                      values=mypal)+
   geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
+
+
+png("fig_outputs/Figure2c.png", height = 8, width = 11.5, units = "in",res=300)
+fig2c
+dev.off()
+
+png("fig_outputs/Figure2c_noFCM.png", height = 8, width = 11.5, units = "in",res=300)
+fig2c
+dev.off()
+
 
 fig2a
 fig2b
@@ -511,6 +551,7 @@ dev.off()
 
 #### foraging ####
 load("data_outputs/rPI_migrants_2019.RData")
+load("data_outputs/rPI_migrants_alt.RData")
 
 #migrants$diet2 <- factor(migrants$diet2, levels=c("G","F","O","C","I"))
 
@@ -538,13 +579,13 @@ bxp
 
 outliers.mig <- migrants_2019 %>%
   group_by(season, sw_foraging) %>%
-  identify_outliers(modified_rPI)#26 outliers
+  identify_outliers(modified_rPI)#31 outliers
 
 #normality
 #using qq since sample size relatively large
 ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
   facet_grid(season ~ sw_foraging)
-#mostly ok 
+#mostly ok, foliage gleaners in breeding a bit off but not terrible 
 
 #homogeneity of variances
 migrants_2019 %>%
@@ -560,10 +601,6 @@ ggplot(migrants_2019, aes(y=modified_rPI, x=sw_foraging))+
 box_m(migrants_2019[, "modified_rPI", drop = FALSE], migrants_2019$sw_foraging)
 #assumption met
 
-#run without ground hawkers and bark foragers
-#migrants_diet2 <- migrants %>%
-#  filter(diet2 != "C" & diet2 != "O")
-
 #mig.diet.lme2 <- lme(SHM ~ season*diet2, data = migrants_diet2, random = ~ 1 | species_code)
 #summary(mig.diet.lme2)
 #anova(mig.diet.lme2)
@@ -576,6 +613,8 @@ summary(mig.for.lmer)
 for.holm.rpi <- emmeans(mig.for.lmer, list(pairwise ~ sw_foraging*season), adjust = "holm")
 summary(for.holm.rpi)
 write.table(for.holm.rpi$`pairwise differences of sw_foraging, season`, file = "fig_outputs/rPI-for-holm.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(for.holm.rpi$`pairwise differences of sw_foraging, season`, file = "fig_outputs/rPI-for-holm_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
+
 #mig.for.bon.table <- emmeans(mig.for.lmer, list(pairwise ~ sw_foraging*season), adjust = "bonferroni")
 #write.table(mig.bon.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/mig-bon.txt", sep = ",", quote = FALSE, row.names = F)
 
@@ -614,7 +653,7 @@ fig3a <- ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean Modified rPI") +
+  ylab("rPIm") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -628,12 +667,19 @@ fig3a <- ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col
                      values=mypal)+
   geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
 
+png("fig_outputs/Figure3a.png", height = 8, width = 11.5, units = "in",res=300)
 fig3a
+dev.off()
+
+png("fig_outputs/Figure3a_noFCM.png", height = 8, width = 11.5, units = "in",res=300)
+fig3a
+dev.off()
 
 #PDs
 
 load("data/species_basic.RData")
 load("data_outputs/bootstrap_all_nobarren.RData")
+load("data_outputs/bootstrap_all_noFCM.RData")
 
 all_data <- left_join(bootstrap_all,species_basic,by="species_code")
 
@@ -657,6 +703,11 @@ all_data4_for <- all_data4_for %>%
 
 all_data4_for$season <- factor(all_data4_for$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 save(all_data4_for, file = "data_outputs/all_data4_for_nobarren.RData")
+save(all_data4_for, file = "data_outputs/all_data4_for_noFCM.RData")
+
+load("data_outputs/all_data4_for_nobarren.RData")
+
+load("data_outputs/all_data4_for_noFCM.RData")
 
 
 #all_data4$log_ratio <- log(all_data4$ratio)
@@ -675,6 +726,7 @@ plot(pd_lm)
 for.holm.pd.table <- emmeans(pd_aov, list(pairwise ~ sw_foraging*season), adjust = "holm")
 summary(for.holm.pd.table)
 write.table(for.holm.pd.table$`pairwise differences of sw_foraging, season`, file = "fig_outputs/for-holm-pd.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(for.holm.pd.table$`pairwise differences of sw_foraging, season`, file = "fig_outputs/for-holm-pd_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
 
 
 #### fig3b ####
@@ -693,13 +745,14 @@ fig3b <- ggplot(aes(y = ratio, x = season, fill = sw_foraging), data = all_data4
                           "Foliage Gleaner","Ground Forager","Ground Hawker"))
 
 #not boxplot
+mypal <- pal_npg("nrc", alpha = 1)(6)
 int.plot.for.b <- all_data4_for %>%
   group_by(sw_foraging, season) %>%
   dplyr::summarize(mean = mean(SHM),
                    sd = sd(SHM),
                    se = sd(SHM)/sqrt(length(SHM)))
 
-fig3b <- ggplot(int.plot.for.b, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
+fig3c <- ggplot(int.plot.for.b, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
   geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
@@ -716,6 +769,14 @@ fig3b <- ggplot(int.plot.for.b, aes(x = season, y = mean, group = sw_foraging, c
                                 "Foliage Gleaner","Ground Forager","Ground Hawker"),
                      values=mypal)+
   geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
+
+png("fig_outputs/Figure3c.png", height = 8, width = 11.5, units = "in",res=300)
+fig3c
+dev.off()
+
+png("fig_outputs/Figure3c.png", height = 8, width = 11.5, units = "in",res=300)
+fig3c
+dev.off()
 
 fig3a
 fig3b
