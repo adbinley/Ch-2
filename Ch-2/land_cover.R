@@ -143,7 +143,7 @@ plot(s2, legend = FALSE, col = my_col1, add=T)
 dev.off()
 
 
-#### availability ####
+#### exposure ####
 
 my_species <- read.csv("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data/bird_data_v4.csv")
 
@@ -151,12 +151,15 @@ x <- raster("E:/eBird/data/raw/STEM/bkpwar-ERD2019-STATUS-20201002-1c7c7cf3/srd_
 
 #calculate PLAND within 3km square for LCCS2 (modified covers)
 r <- raster("D:/Allison/Big_data/Ch-2 landcover/MCD12Q1.006_LC_Prop2.tif")
-filter_r <- r %in% c(1,25,35,36) #modified land cover classes only
+#filter_r <- r %in% c(1,25,35,36) #modified land cover classes only
+filter_r <- r %in% c(25,35,36) #modified land cover classes only, no barren
+filter_r <- r %in% c(35,36) #modified land cover classes only, no FCM
 filter_r1 <- clamp(filter_r,lower = 0.5, useValues = F)
 r2 <- mask(r,filter_r1)
 unique(r2)
-writeRaster(r2, filename = "D:/Allison/Big_data/Ch-2 landcover/modified_cover_only.tif")
-
+#writeRaster(r2, filename = "D:/Allison/Big_data/Ch-2 landcover/modified_cover_only.tif")
+#writeRaster(r2, filename = "D:/Allison/Big_data/Ch-2 landcover/modified_cover_only_nobarren.tif")
+writeRaster(r2, filename = "D:/Allison/Big_data/Ch-2 landcover/modified_cover_only_noFCM.tif")
 
 mod_pland <- aggregate(r2, fact=6, fun=function(vals, na.rm) {
   sum(vals>0, na.rm=na.rm)/length(vals)
@@ -164,13 +167,24 @@ mod_pland <- aggregate(r2, fact=6, fun=function(vals, na.rm) {
 
 #match to ebd abundance raster
 #here using the abd map for house wren
-mod_pland_ebd <- resample(mod_pland,bre_abd_mean, method="bilinear")
-writeRaster(mod_pland_ebd, filename = "D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd.tif")
+#need updated run names for 2019 data
+ebirdst_species <- ebirdst_runs %>%
+  dplyr::select(c("species_code","run_name"))
+
+#new dataset with resident species, traits - 29.3.2021
+my_species <- read.csv("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data/bird_data_v4.csv")
+my_species <- left_join(my_species, ebirdst_species, by = "species_code")
+
+run_name <- my_species$run_name.y[1]
+abd <- load_raster(product = "abundance", path = run_name)
+mod_pland_ebd <- resample(mod_pland,abd, method="bilinear")
+writeRaster(mod_pland_ebd, filename = "D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+writeRaster(mod_pland_ebd, filename = "D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_noFCM.tif")
 
 
 #### loops ####
 #relative abundance for seasonal windows, multiplied by PLAND
-mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd.tif")
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
 
 #need updated run names
 ebirdst_species <- ebirdst_runs %>%
@@ -186,11 +200,17 @@ setwd("E:/eBird/data/raw/STEM")
 
 #breeding_rabd <- list()
 #save(breeding_exp, file = "D:/Allison/Big_data/eBird_outputs/breeding_exp.RData")
-load("D:/Allison/Big_data/eBird_outputs/breeding_exp.RData")
+#save(breeding_exp, file = "D:/Allison/Big_data/eBird_outputs/breeding_exp_nobarren.RData")
+save(breeding_exp, file = "D:/Allison/Big_data/eBird_outputs/breeding_exp_noFCM.RData")
+#load("D:/Allison/Big_data/eBird_outputs/breeding_exp.RData")
+#load("D:/Allison/Big_data/eBird_outputs/breeding_exp_nobarren.RData")
+load("D:/Allison/Big_data/eBird_outputs/breeding_exp_noFCM.RData")
 
-#breeding_exp <- list()
 
-for(i in 210:238){
+
+breeding_exp <- list()
+
+for(i in 148:238){
 #for(i in 169:length(my_species$species_code)){
 #for(i in 1:3){
   
@@ -265,7 +285,7 @@ test1 <- bind_rows(test, .id = "species")
 #### postbreeding ####
 
 #relative abundance for seasonal windows, multiplied by PLAND
-mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd.tif")
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
 
 #need updated run names
 ebirdst_species <- ebirdst_runs %>%
@@ -278,12 +298,13 @@ setwd("E:/eBird/data/raw/STEM")
 
 
 #breeding_rabd <- list()
-save(postbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/postbreeding_exp.RData")
-load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp.RData")
+#save(postbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/postbreeding_exp.RData")
+save(postbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/postbreeding_exp_nobarren.RData")
+load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp_nobarren.RData")
 
 postbreeding_exp <- list()
 
-for(i in 200:238){
+for(i in 233:238){
   #for(i in 169:length(my_species$species_code)){
   #for(i in 1:3){
   
@@ -358,7 +379,7 @@ test1 <- bind_rows(test, .id = "species")
 #### nonbreeding ####
 
 #relative abundance for seasonal windows, multiplied by PLAND
-mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd.tif")
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
 
 #need updated run names
 ebirdst_species <- ebirdst_runs %>%
@@ -371,12 +392,12 @@ setwd("E:/eBird/data/raw/STEM")
 
 
 #breeding_rabd <- list()
-save(nonbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/nonbreeding_exp.RData")
-load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp.RData")
+save(nonbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_nobarren.RData")
+load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_nobarren.RData")
 
 nonbreeding_exp <- list()
 
-for(i in 235:238){
+for(i in 221:238){
   #for(i in 169:length(my_species$species_code)){
   #for(i in 1:3){
   
@@ -454,7 +475,7 @@ test1 <- bind_rows(test, .id = "species")
 #### prebreeding ####
 
 #relative abundance for seasonal windows, multiplied by PLAND
-mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd.tif")
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
 
 #need updated run names
 ebirdst_species <- ebirdst_runs %>%
@@ -467,12 +488,12 @@ setwd("E:/eBird/data/raw/STEM")
 
 
 #breeding_rabd <- list()
-save(prebreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/prebreeding_exp.RData")
-load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp.RData")
+save(prebreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/prebreeding_exp_nobarren.RData")
+load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp_nobarren.RData")
 
-#prebreeding_exp <- list()
+prebreeding_exp <- list()
 
-for(i in 121:238){
+for(i in 113:238){
   #for(i in 169:length(my_species$species_code)){
   #for(i in 1:3){
   
@@ -541,34 +562,36 @@ names <- names[-114]
 
 #first rescue reevir1 - not working because stupid API key wont work
 library(ebirdst)
-setwd("E:/eBird/data/raw/STEM")
+#setwd("E:/eBird/data/raw/STEM")
 
-ebirdst_download(
-  species = "reevir1", #spec,
-  path = getwd(),
-  tifs_only = FALSE,
-  force = TRUE,
-  show_progress = TRUE
-)
+# ebirdst_download(
+#   species = "reevir1", #spec,
+#   path = getwd(),
+#   tifs_only = FALSE,
+#   force = TRUE,
+#   show_progress = TRUE
+# )
 
-load("D:/Allison/Big_data/eBird_outputs/breeding_exp.RData")
+load("D:/Allison/Big_data/eBird_outputs/breeding_exp_nobarren.RData")
 #breeding_exp1 <- breeding_exp[breeding_exp != "reevir1"]too slow
 breeding_exp1 <- breeding_exp[-114]
-load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp.RData")
+load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp_nobarren.RData")
 postbreeding_exp1 <- postbreeding_exp[-114]
-load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp.RData")
+load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_nobarren.RData")
 nonbreeding_exp1 <- nonbreeding_exp[-114]
-load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp.RData")
+load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp_nobarren.RData")
 prebreeding_exp1 <- prebreeding_exp[-114]
 
 func <- function(x) {
-  c(mean = mean(x), var = var(x))
+  c(mean = mean(x), se = sd(x)/sqrt(length(x))) 
 }
 
 breeding <- lapply(breeding_exp1, func)
 names(breeding) <- names
 breeding <- bind_rows(breeding, .id = "species_code")
 breeding$season <- rep("breeding",length(breeding$species_code))
+breeding$mean[108] <- 0 #gycthr - breeds in the far north
+breeding$se[108] <- 0
 
 postbreeding <- lapply(postbreeding_exp1, func)
 names(postbreeding) <- names
@@ -579,6 +602,7 @@ nonbreeding <- lapply(nonbreeding_exp1, func)
 names(nonbreeding) <- names
 nonbreeding <- bind_rows(nonbreeding, .id = "species_code")
 nonbreeding$season <- rep("nonbreeding",length(nonbreeding$species_code))
+nonbreeding$se[90] <- 0 #only one cell
 
 prebreeding <- lapply(prebreeding_exp1, func)
 names(prebreeding) <- names
@@ -586,31 +610,38 @@ prebreeding <- bind_rows(prebreeding, .id = "species_code")
 prebreeding$season <- rep("prebreeding",length(prebreeding$species_code))
 
 availability <- rbind(breeding,postbreeding,nonbreeding,prebreeding)
-load("data_outputs/rPI_migrants_2019.RData")
+#load("data_outputs/rPI_migrants_2019.RData")
+load("data/species_basic.RData")
+species_data <- species_basic[-114,]
 
-species_data <- migrants_2019 %>%
-  select(species_code, diet2,sw_foraging,SW_mig)
-species_data <- species_data[!duplicated(species_data),]
-species_data <- species_data[-173,]
+# species_data <- migrants_2019 %>%
+#   select(species_code, diet2,sw_foraging,SW_mig)
+# species_data <- species_data[!duplicated(species_data),]
+# species_data <- species_data[-173,]
 
 availability1 <- left_join(availability,species_data)
-save(availability1, file = "data_outputs/availability_data.RData")
+save(availability1, file = "data_outputs/availability_data_nobarren.RData")
 
 #### lc data viz ####
 library(ggsci)
 
-load("data_outputs/availability_data.RData")
-names(availability1)[names(availability1) == 'mean'] <- 'availability'
+load("data_outputs/availability_data_nobarren.RData")
+names(availability1)[names(availability1) == 'mean'] <- 'Exposure'
 
 availability1$season <- factor(availability1$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 availability1$SW_mig <- factor(availability1$SW_mig, levels=c("N","S","NR","R"))
 
+
+
+# migratory ---------------------------------------------------------------
+
+
 mypal <- pal_npg("nrc", alpha = 1)(4)
 int.plot.ava <- availability1 %>%
   group_by(SW_mig, season) %>%
-  dplyr::summarize(mean = mean(availability),
-                   sd = sd(availability),
-                   se = sd(availability)/sqrt(length(availability)))
+  dplyr::summarize(mean = mean(sqrt_exp),
+                   sd = sd(sqrt_exp),
+                   se = sd(sqrt_exp)/sqrt(length(sqrt_exp)))
 
 #int.plot1 <- int.plota %>% 
 #  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
@@ -622,7 +653,7 @@ ava_plot_mig <- ggplot(int.plot.ava, aes(x = season, y = mean, group = SW_mig, c
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Availability") +
+  ylab("Exposure") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -637,22 +668,343 @@ ava_plot_mig <- ggplot(int.plot.ava, aes(x = season, y = mean, group = SW_mig, c
 
 ava_plot_mig
 
+png("fig_outputs/Figure_exposure.png", height = 8, width = 11.5, units = "in",res=300)
+ava_plot_mig
+dev.off()
+
+
+# migratory models --------------------------------------------------------
+
+library(lme4)
+library(nlme)
+library(car)
+library(tidyverse)
+library(lmerTest)
+library(MuMIn)
+library(effectsize)
+library(emmeans)
+library(lattice)
+library(ggpubr)
+library(rstatix)
+library(ggsci)
+library(ggsignif)
+
+hist(availability1$sqrt_exp)
+
+availability1 <- availability1 %>%
+  mutate(sqrt_exp = sqrt(Exposure),
+         log_exp = log(Exposure+1))
+
+#lme4
+mig.exp.lmer <- lmer(sqrt_exp ~ season*SW_mig + (1 | species_code), data = availability1)
+summary(mig.exp.lmer)
+AIC(mig.exp.lmer)
+anova(mig.exp.lmer)
+
+
+#assumptions
+#boxplot suggests outliers
+#log transformation did little to help any assumptions
+bxp <- ggboxplot(
+  availability1, x = "season", y = "sqrt_exp",
+  color = "SW_mig", palette = "jco"
+)
+bxp
+
+outliers.mig <- availability1 %>%
+  group_by(season, SW_mig) %>%
+  identify_outliers(sqrt_exp)
+#47 outliers sqrt
+#88 log
+
+#normality
+#using qq since sample size relatively large
+ggqqplot(availability1, "sqrt_exp", ggtheme = theme_bw()) +
+  facet_grid(season ~ SW_mig)
+#looks decent, sqrt best
+
+#homogeneity of variances
+availability1 %>%
+  group_by(season) %>%
+  levene_test(sqrt_exp ~ SW_mig)
+levene_test(availability1, sqrt_exp~SW_mig*season)
+#better transformed
+ggplot(availability1, aes(y=sqrt_exp, x=SW_mig))+
+  geom_point() +
+  facet_wrap(~season)
+#not too bad
+#LMM fairly robust
+
+#homogeneity of covariances
+box_m(availability1[, "sqrt_exp", drop = FALSE], availability1$SW_mig)
+#bad, seems like relationship may be driven by outliers
+
+##post-hoc comparisons
+
+mig.exp.tukey.table <- emmeans(mig.exp.lmer, list(pairwise ~ SW_mig*season), adjust = "holm")
+summary(mig.exp.tukey.table)
+write.table(mig.exp.tukey.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/exp-mig-holm.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(mig.exp.tukey.table$`pairwise differences of SW_mig, season`, file = "fig_outputs/exp-mig-holm_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
+
+#marginal and conditional Rsq, AIC
+#install.packages("piecewiseSEM")
+library(piecewiseSEM)
+rsquared(mig.exp.lmer)
+AIC(mig.exp.lmer)
 
 
 
-# recycling 
 
-rs <- stack(q,r,s)
 
-N<-Which(q %in% nat,cells=T)
-#N1[N]<-NEW_VALUE
-N1 <- q[N]
-N2 <-Which(r %in% nat,cells=T)
-N3 <-r[N2]
-N4 <-Which(s %in% nat,cells=T)
-n5 <-s[N4]
+# diet --------------------------------------------------------------------
 
-nr <- do.call(merge, list(N1,N3,N5))
+mypal <- pal_npg("nrc", alpha = 1)(5)
+int.plot.ava <- availability1 %>%
+  group_by(diet2, season) %>%
+  dplyr::summarize(mean = mean(Exposure),
+                   sd = sd(Exposure),
+                   se = sd(Exposure)/sqrt(length(Exposure)))
 
-plot(r, legend = FALSE, col = rev(terrain.colors(4)))
-legend("topright", legend = c("category 1", "category 2", "category 3", "category 4"), fill = rev(terrain.colors(4)))
+#int.plot1 <- int.plota %>% 
+#  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
+
+ava_plot_diet <- ggplot(int.plot.ava, aes(x = season, y = mean, group = diet2, col = diet2)) +
+  geom_line(aes(group=diet2),position=position_dodge(0.6)) +
+  geom_point(position=position_dodge(0.6), size=3, pch=18) +
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
+                position=position_dodge(0.6)) +
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Mean Exposure") +
+  # geom_hline(yintercept=1, linetype="dashed", 
+  #            color = "black", size=1)+
+  #labs(col = "Migratory Strategy") +
+  #theme(axis.text.x = element_blank(),
+  #    #axis.ticks.x = element_blank(),
+  #    axis.title.x = element_blank())+
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_color_manual(name = "Diet",
+                     labels = c("Carnivore","Frugivore","Granivore","Insectivore","Omnivore"),
+                     values=mypal)+
+  geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
+
+ava_plot_diet
+
+png("fig_outputs/diet_exposure.png", height = 8, width = 11.5, units = "in",res=300)
+ava_plot_diet
+dev.off()
+
+
+
+# diet models -------------------------------------------------------------
+
+library(lme4)
+library(nlme)
+library(car)
+library(tidyverse)
+library(lmerTest)
+library(MuMIn)
+library(effectsize)
+library(emmeans)
+library(lattice)
+library(ggpubr)
+library(rstatix)
+library(ggsci)
+library(ggsignif)
+
+hist(availability1$sqrt_exp)
+
+availability1 <- availability1 %>%
+  mutate(sqrt_exp = sqrt(Exposure),
+         log_exp = log(Exposure+1))
+
+#lme4
+diet.exp.lmer <- lmer(sqrt_exp ~ season*diet2 + (1 | species_code), data = availability1)
+summary(diet.exp.lmer)
+AIC(diet.exp.lmer)
+anova(diet.exp.lmer)
+
+
+#assumptions
+#boxplot suggests outliers
+#log transformation did little to help any assumptions
+bxp <- ggboxplot(
+  availability1, x = "season", y = "sqrt_exp",
+  color = "diet2", palette = "jco"
+)
+bxp
+
+outliers.diet <- availability1 %>%
+  group_by(season, diet2) %>%
+  identify_outliers(sqrt_exp)
+#56 outliers sqrt
+
+
+#normality
+#using qq since sample size relatively large
+ggqqplot(availability1, "sqrt_exp", ggtheme = theme_bw()) +
+  facet_grid(season ~ diet2)
+#looks decent, sqrt best, omnivores still a bit off
+
+#homogeneity of variances
+availability1 %>%
+  group_by(season) %>%
+  levene_test(sqrt_exp ~ diet2)
+levene_test(availability1, sqrt_exp~diet2*season)
+#better transformed, but still problematic 
+ggplot(availability1, aes(y=sqrt_exp, x=diet2))+
+  geom_point() +
+  facet_wrap(~season)
+#not too bad
+#LMM fairly robust - largely due to grackle outlier
+
+#homogeneity of covariances
+box_m(availability1[, "sqrt_exp", drop = FALSE], availability1$diet2)
+#bad
+
+##post-hoc comparisons
+
+diet.exp.tukey.table <- emmeans(diet.exp.lmer, list(pairwise ~ diet2*season), adjust = "holm")
+summary(diet.exp.tukey.table)
+write.table(diet.exp.tukey.table$`pairwise differences of diet2, season`, file = "fig_outputs/exp-diet-holm.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(diet.exp.tukey.table$`pairwise differences of diet2, season`, file = "fig_outputs/exp-diet-holm_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
+
+#marginal and conditional Rsq, AIC
+#install.packages("piecewiseSEM")
+library(piecewiseSEM)
+rsquared(diet.exp.lmer)
+AIC(diet.exp.lmer)
+
+
+
+# foraging strategy -------------------------------------------------------
+
+
+mypal <- pal_npg("nrc", alpha = 1)(6)
+int.plot.ava <- availability1 %>%
+  group_by(sw_foraging, season) %>%
+  dplyr::summarize(mean = mean(Exposure),
+                   sd = sd(Exposure),
+                   se = sd(Exposure)/sqrt(length(Exposure)))
+
+#int.plot1 <- int.plota %>% 
+#  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
+
+ava_plot_for <- ggplot(int.plot.ava, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
+  geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
+  geom_point(position=position_dodge(0.6), size=3, pch=18) +
+  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
+                position=position_dodge(0.6)) +
+  theme_classic(base_size = 22, base_family = "serif") +
+  xlab("Season") +
+  ylab("Mean Exposure") +
+  # geom_hline(yintercept=1, linetype="dashed", 
+  #            color = "black", size=1)+
+  #labs(col = "Migratory Strategy") +
+  #theme(axis.text.x = element_blank(),
+  #    #axis.ticks.x = element_blank(),
+  #    axis.title.x = element_blank())+
+  theme(axis.text.x = element_text(angle = 45, hjust=1))+
+  scale_color_manual(name = "Foraging Strategy",
+                     labels = c("Aerial Forager","Aerial Hawker","Bark Forager","Foliage Gleaner","Ground Forager","Ground Hawker"),
+                     values=mypal)+
+  geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
+
+ava_plot_for
+
+png("fig_outputs/for_exposure.png", height = 8, width = 11.5, units = "in",res=300)
+ava_plot_for
+dev.off()
+
+
+ava_plot_mig
+ava_plot_diet
+ava_plot_for
+
+
+
+# foraging models ---------------------------------------------------------
+
+library(lme4)
+library(nlme)
+library(car)
+library(tidyverse)
+library(lmerTest)
+library(MuMIn)
+library(effectsize)
+library(emmeans)
+library(lattice)
+library(ggpubr)
+library(rstatix)
+library(ggsci)
+library(ggsignif)
+
+hist(availability1$sqrt_exp)
+
+availability1 <- availability1 %>%
+  mutate(sqrt_exp = sqrt(Exposure),
+         log_exp = log(Exposure+1))
+
+#lme4
+for.exp.lmer <- lmer(sqrt_exp ~ season*sw_foraging + (1 | species_code), data = availability1)
+summary(for.exp.lmer)
+AIC(for.exp.lmer)
+anova(for.exp.lmer)
+
+
+#assumptions
+#boxplot suggests outliers
+#log transformation did little to help any assumptions
+bxp <- ggboxplot(
+  availability1, x = "season", y = "sqrt_exp",
+  color = "sw_foraging", palette = "jco"
+)
+bxp
+
+outliers.for <- availability1 %>%
+  group_by(season, sw_foraging) %>%
+  identify_outliers(sqrt_exp)
+#50 outliers sqrt
+
+
+#normality
+#using qq since sample size relatively large
+ggqqplot(availability1, "sqrt_exp", ggtheme = theme_bw()) +
+  facet_grid(season ~ sw_foraging)
+#looks decent, sqrt best, granivores still a bit off
+
+#homogeneity of variances
+availability1 %>%
+  group_by(season) %>%
+  levene_test(sqrt_exp ~ sw_foraging)
+levene_test(availability1, sqrt_exp~sw_foraging*season)
+#better transformed, but still problematic 
+ggplot(availability1, aes(y=sqrt_exp, x=sw_foraging))+
+  geom_point() +
+  facet_wrap(~season)
+#not too bad
+#LMM fairly robust - largely due to grackle outlier
+
+#homogeneity of covariances
+box_m(availability1[, "sqrt_exp", drop = FALSE], availability1$sw_foraging)
+#bad
+
+##post-hoc comparisons
+
+#no significant interaction
+
+for.exp.tukey.table <- emmeans(for.exp.lmer, list(pairwise ~ sw_foraging), adjust = "holm")
+summary(for.exp.tukey.table)
+write.table(for.exp.tukey.table$`pairwise differences of sw_foraging`, file = "fig_outputs/exp-for-holm.txt", sep = ",", quote = FALSE, row.names = F)
+#write.table(for.exp.tukey.table$`pairwise differences of diet2, season`, file = "fig_outputs/exp-diet-holm_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
+
+#marginal and conditional Rsq, AIC
+#install.packages("piecewiseSEM")
+library(piecewiseSEM)
+rsquared(for.exp.lmer)
+AIC(for.exp.lmer)
+
+
+
+
+

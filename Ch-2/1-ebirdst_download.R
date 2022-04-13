@@ -21,7 +21,7 @@ for(i in 1:length(my_species1$species_code)){
   spec <- my_species1$species_code[i]
   
 ebirdst_download(
-  species = "grhowl", #spec,
+  species = "reevir1", #spec,
   path = getwd(),
   tifs_only = FALSE,
   force = TRUE,

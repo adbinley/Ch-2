@@ -774,7 +774,7 @@ png("fig_outputs/Figure3c.png", height = 8, width = 11.5, units = "in",res=300)
 fig3c
 dev.off()
 
-png("fig_outputs/Figure3c.png", height = 8, width = 11.5, units = "in",res=300)
+png("fig_outputs/Figure3c_noFCM.png", height = 8, width = 11.5, units = "in",res=300)
 fig3c
 dev.off()
 
