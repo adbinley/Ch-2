@@ -184,7 +184,8 @@ writeRaster(mod_pland_ebd, filename = "D:/Allison/Big_data/Ch-2 landcover/modifi
 
 #### loops ####
 #relative abundance for seasonal windows, multiplied by PLAND
-mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+#mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_noFCM.tif")
 
 #need updated run names
 ebirdst_species <- ebirdst_runs %>%
@@ -210,7 +211,7 @@ load("D:/Allison/Big_data/eBird_outputs/breeding_exp_noFCM.RData")
 
 breeding_exp <- list()
 
-for(i in 148:238){
+for(i in 198:238){
 #for(i in 169:length(my_species$species_code)){
 #for(i in 1:3){
   
@@ -285,7 +286,8 @@ test1 <- bind_rows(test, .id = "species")
 #### postbreeding ####
 
 #relative abundance for seasonal windows, multiplied by PLAND
-mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+#mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_noFCM.tif")
 
 #need updated run names
 ebirdst_species <- ebirdst_runs %>%
@@ -299,12 +301,14 @@ setwd("E:/eBird/data/raw/STEM")
 
 #breeding_rabd <- list()
 #save(postbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/postbreeding_exp.RData")
-save(postbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/postbreeding_exp_nobarren.RData")
-load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp_nobarren.RData")
+#save(postbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/postbreeding_exp_nobarren.RData")
+#load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp_nobarren.RData")
+save(postbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/postbreeding_exp_noFCM.RData")
+load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp_noFCM.RData")
 
 postbreeding_exp <- list()
 
-for(i in 233:238){
+for(i in 146:238){
   #for(i in 169:length(my_species$species_code)){
   #for(i in 1:3){
   
@@ -379,7 +383,8 @@ test1 <- bind_rows(test, .id = "species")
 #### nonbreeding ####
 
 #relative abundance for seasonal windows, multiplied by PLAND
-mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+#mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_noFCM.tif")
 
 #need updated run names
 ebirdst_species <- ebirdst_runs %>%
@@ -392,12 +397,14 @@ setwd("E:/eBird/data/raw/STEM")
 
 
 #breeding_rabd <- list()
-save(nonbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_nobarren.RData")
-load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_nobarren.RData")
+#save(nonbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_nobarren.RData")
+#load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_nobarren.RData")
+save(nonbreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_noFCM.RData")
+load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_noFCM.RData")
 
 nonbreeding_exp <- list()
 
-for(i in 221:238){
+for(i in 227:238){
   #for(i in 169:length(my_species$species_code)){
   #for(i in 1:3){
   
@@ -475,7 +482,8 @@ test1 <- bind_rows(test, .id = "species")
 #### prebreeding ####
 
 #relative abundance for seasonal windows, multiplied by PLAND
-mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+#mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_noFCM.tif")
 
 #need updated run names
 ebirdst_species <- ebirdst_runs %>%
@@ -488,12 +496,14 @@ setwd("E:/eBird/data/raw/STEM")
 
 
 #breeding_rabd <- list()
-save(prebreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/prebreeding_exp_nobarren.RData")
-load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp_nobarren.RData")
+# save(prebreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/prebreeding_exp_nobarren.RData")
+# load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp_nobarren.RData")
+save(prebreeding_exp, file = "D:/Allison/Big_data/eBird_outputs/prebreeding_exp_noFCM.RData")
+load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp_noFCM.RData")
 
 prebreeding_exp <- list()
 
-for(i in 113:238){
+for(i in 154:238){
   #for(i in 169:length(my_species$species_code)){
   #for(i in 1:3){
   
@@ -573,13 +583,17 @@ library(ebirdst)
 # )
 
 load("D:/Allison/Big_data/eBird_outputs/breeding_exp_nobarren.RData")
+load("D:/Allison/Big_data/eBird_outputs/breeding_exp_noFCM.RData")
 #breeding_exp1 <- breeding_exp[breeding_exp != "reevir1"]too slow
 breeding_exp1 <- breeding_exp[-114]
 load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp_nobarren.RData")
+load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp_noFCM.RData")
 postbreeding_exp1 <- postbreeding_exp[-114]
 load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_nobarren.RData")
+load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_noFCM.RData")
 nonbreeding_exp1 <- nonbreeding_exp[-114]
 load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp_nobarren.RData")
+load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp_noFCM.RData")
 prebreeding_exp1 <- prebreeding_exp[-114]
 
 func <- function(x) {
@@ -620,12 +634,14 @@ species_data <- species_basic[-114,]
 # species_data <- species_data[-173,]
 
 availability1 <- left_join(availability,species_data)
-save(availability1, file = "data_outputs/availability_data_nobarren.RData")
+#save(availability1, file = "data_outputs/availability_data_nobarren.RData")
+save(availability1, file = "data_outputs/availability_data_noFCM.RData")
 
 #### lc data viz ####
 library(ggsci)
 
-load("data_outputs/availability_data_nobarren.RData")
+#load("data_outputs/availability_data_nobarren.RData")
+load("data_outputs/availability_data_noFCM.RData")
 names(availability1)[names(availability1) == 'mean'] <- 'Exposure'
 
 availability1$season <- factor(availability1$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
@@ -639,9 +655,9 @@ availability1$SW_mig <- factor(availability1$SW_mig, levels=c("N","S","NR","R"))
 mypal <- pal_npg("nrc", alpha = 1)(4)
 int.plot.ava <- availability1 %>%
   group_by(SW_mig, season) %>%
-  dplyr::summarize(mean = mean(sqrt_exp),
-                   sd = sd(sqrt_exp),
-                   se = sd(sqrt_exp)/sqrt(length(sqrt_exp)))
+  dplyr::summarize(mean = mean(Exposure),
+                   sd = sd(Exposure),
+                   se = sd(Exposure)/sqrt(length(Exposure)))
 
 #int.plot1 <- int.plota %>% 
 #  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
@@ -653,7 +669,7 @@ ava_plot_mig <- ggplot(int.plot.ava, aes(x = season, y = mean, group = SW_mig, c
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Exposure") +
+  ylab("Mean Exposure") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -996,7 +1012,7 @@ box_m(availability1[, "sqrt_exp", drop = FALSE], availability1$sw_foraging)
 for.exp.tukey.table <- emmeans(for.exp.lmer, list(pairwise ~ sw_foraging), adjust = "holm")
 summary(for.exp.tukey.table)
 write.table(for.exp.tukey.table$`pairwise differences of sw_foraging`, file = "fig_outputs/exp-for-holm.txt", sep = ",", quote = FALSE, row.names = F)
-#write.table(for.exp.tukey.table$`pairwise differences of diet2, season`, file = "fig_outputs/exp-diet-holm_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(for.exp.tukey.table$`pairwise differences of sw_foraging`, file = "fig_outputs/exp-for-holm_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
 
 #marginal and conditional Rsq, AIC
 #install.packages("piecewiseSEM")
