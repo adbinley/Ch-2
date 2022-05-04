@@ -297,8 +297,7 @@ natural1 <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests",
 
 modified1 <- c("Forest/Cropland Mosaics",                    
                "Natural Herbaceous/Croplands Mosaics",       
-               "Herbaceous Croplands", 
-               "Barren" )
+               "Herbaceous Croplands" )
   
 lc_classes <- c(natural,modified)
 lc_classes1 <- c(natural1,modified1)
@@ -315,7 +314,7 @@ pds2 <- pds %>%
 #  filter(predictor == natural[j])
 
 #### pd plots #### 
-#yes I should have looped it but i didnt so
+#yes I should have looped it or made a function 
 
 library(ggtext)
 
@@ -483,24 +482,24 @@ pd_plot11 <- ebirdst_subset(pds2, bre_extent) %>%
   theme(plot.title = element_textbox_simple())
 #pd_plot11
 
-pd_plot12 <- ebirdst_subset(pds2, bre_extent) %>%
-  filter(predictor == lc_classes[12])%>%
-  ggplot(aes(predictor_value,response))+
-  #geom_point(alpha=0.2)+
-  geom_smooth(method = "lm", size = 2, col = "#FDC12A", se=F)+
-  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
-  theme_classic(base_size = 12, base_family = "serif")+
-  xlab("")+ #Predictor Level
-  ylab("")+#Probability Occurrence
-  ggtitle("Barren")+
-  xlim(0,100)+
-  ylim(0,0.4)+
-  theme(plot.title = element_textbox_simple())
+# pd_plot12 <- ebirdst_subset(pds2, bre_extent) %>%
+#   filter(predictor == lc_classes[12])%>%
+#   ggplot(aes(predictor_value,response))+
+#   #geom_point(alpha=0.2)+
+#   geom_smooth(method = "lm", size = 2, col = "#FDC12A", se=F)+
+#   #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+#   theme_classic(base_size = 12, base_family = "serif")+
+#   xlab("")+ #Predictor Level
+#   ylab("")+#Probability Occurrence
+#   ggtitle("Barren")+
+#   xlim(0,100)+
+#   ylim(0,0.4)+
+#   theme(plot.title = element_textbox_simple())
 #pd_plot12
 
 pd_plot_list <- list(pd_plot1,pd_plot2,pd_plot3,pd_plot4,
                      pd_plot5,pd_plot6,pd_plot7,pd_plot8,
-                     pd_plot9,pd_plot10,pd_plot11,pd_plot12)
+                     pd_plot9,pd_plot10,pd_plot11)
 
 
 pd_plots <- ggarrange(plotlist = pd_plot_list,
@@ -510,9 +509,52 @@ pd_plots <- ggarrange(plotlist = pd_plot_list,
 theme(text = element_text())$text[ c("serif") ]
 
 pd_plots <- annotate_figure(pd_plots,
-                left = "Prob. Occurrence",
+                left = "Logit Probability Occurrence",
                 bottom = "Proportion Cover")
 
-png("fig_outputs/pd_plots.png", height = 12, width = 12, units = "in",res=300)
+setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
+
+png("fig_outputs/pd_plots2.png", height = 12, width = 12, units = "in",res=300)
 pd_plots
+dev.off()
+
+#combined
+
+pd_plot_nat <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor %in% lc_classes[1:8])%>%
+  ggplot(aes(predictor_value,response))+
+  geom_smooth(aes(group = predictor),method = "lm", size = 2, se=F)+
+  geom_smooth(method = "lm", size = 2, col= "black", linetype="dashed", se=F)+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Natural")+
+  xlim(0,100)+
+  ylim(0,0.4)#+
+  #theme(plot.title = element_textbox_simple())
+pd_plot_nat
+
+#
+
+pd_plot_mod <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor %in% lc_classes[9:11])%>%
+  ggplot(aes(predictor_value,response))+
+  geom_smooth(aes(group = predictor),method = "lm", size = 2, col = "#FDC12A", se=F)+
+  geom_smooth(method = "lm", size = 2, col= "black", linetype="dashed", se=F)+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ 
+  ylab("")+
+  ggtitle("Modified")+
+  xlim(0,100)+
+  ylim(0,0.4)
+pd_plot_mod
+
+plot_list_2 <- list(pd_plot_nat,pd_plot_mod)
+
+pd_plots2 <- ggarrange(plotlist = plot_list_2,
+                      ncol=2,
+                      nrow = 1)
+
+png("fig_outputs/pd_plots3.png", height = 6, width = 11, units = "in",res=300)
+pd_plots2
 dev.off()

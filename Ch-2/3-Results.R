@@ -17,7 +17,7 @@ library(ggsignif)
 
 #### Figure 1 ####
 
-load("data_outputs/rPI_migrants_2019.RData")
+load("data_outputs/rPI_migrants_2019.RData") #now without barren
 load("data_outputs/rPI_migrants_alt.RData")
 
 ##migratory strategy - rPIs
@@ -131,7 +131,7 @@ geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
                 position=position_dodge(0.6)) +
 theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("rPIm") +
+  ylab("Mean rPIm") +
  # geom_hline(yintercept=1, linetype="dashed", 
  #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -150,7 +150,7 @@ png("fig_outputs/Figure1a.png", height = 8, width = 11.5, units = "in",res=300)
 fig1a
 dev.off()
 
-png("fig_outputs/Figure1a_noFCM.png", height = 8, width = 11.5, units = "in",res=300)
+png("fig_outputs/Figure1a_nobarren.png", height = 8, width = 11.5, units = "in",res=300)
 fig1a
 dev.off()
 
@@ -264,18 +264,21 @@ dev.off()
 
 
 fig1a
-fig1b
-plotlist1 <- list(fig1a,fig1b)
+ava_plot_mig
+fig1c
+plotlist1 <- list(fig1a,ava_plot_mig,fig1c)
 
 figure1 <- ggarrange(plotlist=plotlist1,
                      common.legend = T,
-                     ncol=1,
+                     ncol=2,
                      nrow=2,
-                     legend="right",
+                     legend="none",
                      align="hv")#%>%
   #annotate_figure(bottom = text_grob("Season", gp = gpar(cex = 1.3)))
 
-png("fig_outputs/figure1_dot.png", height = 11.5, width = 8, units = "in",res=300)
+#png("fig_outputs/figure1_dot.png", height = 11.5, width = 8, units = "in",res=300)
+png("fig_outputs/figure1_noFCM.png", height = 11.5, width = 8, units = "in",res=300)
+png("fig_outputs/figure1_nobarren.png", height = 9, width = 8, units = "in",res=300)
 figure1
 dev.off()
 
@@ -407,7 +410,7 @@ fig2a <- ggplot(mig.diet.plot, aes(x = season, y = mean, group = diet2, col = di
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("rPIm") +
+  ylab("Mean rPIm") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -532,17 +535,20 @@ dev.off()
 
 
 fig2a
-fig2b
-plotlist2 <- list(fig2a,fig2b)
+ava_plot_diet
+fig2c
+plotlist2 <- list(fig2a,ava_plot_diet,fig2c)
 
 figure2 <- ggarrange(plotlist=plotlist2,
                      common.legend = T,
-                     ncol=1,
+                     ncol=2,
                      nrow=2,
-                     legend="right",
+                     legend="none",
                      align="hv")
 
-png("fig_outputs/figure2_dot.png", height = 11.5, width = 8, units = "in",res=300)
+#png("fig_outputs/figure2_dot.png", height = 11.5, width = 8, units = "in",res=300)
+png("fig_outputs/figure2_noFCM.png", height = 11.5, width = 8, units = "in",res=300)
+png("fig_outputs/figure2_nobarren.png", height = 9, width = 8, units = "in",res=300)
 figure2
 dev.off()
 
@@ -653,7 +659,7 @@ fig3a <- ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("rPIm") +
+  ylab("Mean rPIm") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -779,17 +785,20 @@ fig3c
 dev.off()
 
 fig3a
-fig3b
-plotlist3 <- list(fig3a,fig3b)
+ava_plot_for
+fig3c
+plotlist3 <- list(fig3a,ava_plot_for,fig3c)
 
 figure3 <- ggarrange(plotlist=plotlist3,
                      common.legend = T,
-                     ncol=1,
+                     ncol=2,
                      nrow=2,
-                     legend="right",
+                     legend="none",
                      align="hv")
 
-png("fig_outputs/figure3_dot.png", height = 11.5, width = 8, units = "in",res=300)
+#png("fig_outputs/figure3_dot.png", height = 11.5, width = 8, units = "in",res=300)
+png("fig_outputs/figure3_noFCM.png", height = 11.5, width = 8, units = "in",res=300)
+png("fig_outputs/figure3_nobarren.png", height = 9, width = 8, units = "in",res=300)
 figure3
 dev.off()
 

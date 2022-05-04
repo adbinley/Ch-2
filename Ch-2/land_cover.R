@@ -4,6 +4,41 @@ library(ebirdst)
 library(tidyverse)
 library(raster)
 
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+
+png("fig_outputs/mod_pland.png", height = 9, width = 8, units = "in",res=300)
+plot(mod_pland_ebd)
+dev.off()
+
+x <- raster("E:/eBird/data/raw/STEM/bkcchi-ERD2019-STATUS-20200929-9269169c/abundance_seasonal/bkcchi-ERD2019-STATUS-20200929-9269169c_lr_2019_abundance-seasonal_resident.tif")
+
+abd <- as(x, "SpatialPixelsDataFrame")
+abd_df <- as.data.frame(abd)
+colnames(abd_df) <- c("value", "x", "y")
+
+library(viridis)
+
+png("fig_outputs/rel_abd.png", height = 9, width = 8, units = "in",res=300)
+ggplot() +  
+  geom_tile(data=abd_df, aes(x=x, y=y, fill=value), alpha=0.8) + 
+  scale_fill_gradient2() +
+  coord_equal() +
+  theme_classic()
+dev.off()
+
+exposure1 <- as(mod_pland_ebd, "SpatialPixelsDataFrame")
+exposure2 <- as.data.frame(exposure1)
+colnames(exposure2) <- c("value", "x", "y")
+
+png("fig_outputs/exposure.png", height = 9, width = 8, units = "in",res=300)
+ggplot() +  
+  geom_tile(data=exposure2, aes(x=x, y=y, fill=value), alpha=0.8) + 
+  scale_fill_viridis() +
+  coord_equal() +
+  theme_classic()
+dev.off()
+
+
 preds <- ebirdst::ebirdst_predictors
 
 #downloaded manually
@@ -175,7 +210,7 @@ ebirdst_species <- ebirdst_runs %>%
 my_species <- read.csv("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data/bird_data_v4.csv")
 my_species <- left_join(my_species, ebirdst_species, by = "species_code")
 
-run_name <- my_species$run_name.y[1]
+run_name <- my_species$run_name.y[62]
 abd <- load_raster(product = "abundance", path = run_name)
 mod_pland_ebd <- resample(mod_pland,abd, method="bilinear")
 writeRaster(mod_pland_ebd, filename = "D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
@@ -184,7 +219,7 @@ writeRaster(mod_pland_ebd, filename = "D:/Allison/Big_data/Ch-2 landcover/modifi
 
 #### loops ####
 #relative abundance for seasonal windows, multiplied by PLAND
-#mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
 mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_noFCM.tif")
 
 #need updated run names
@@ -640,7 +675,7 @@ save(availability1, file = "data_outputs/availability_data_noFCM.RData")
 #### lc data viz ####
 library(ggsci)
 
-#load("data_outputs/availability_data_nobarren.RData")
+load("data_outputs/availability_data_nobarren.RData")
 load("data_outputs/availability_data_noFCM.RData")
 names(availability1)[names(availability1) == 'mean'] <- 'Exposure'
 
@@ -1022,5 +1057,27 @@ AIC(for.exp.lmer)
 
 
 
+####plotting maps for appendix####
+writeRaster(bre_abd_mean, filename = "D:/Allison/Big_data/Ch-2 landcover/magwar_bre_abd.tif")
+bre_abd_mean <- raster("D:/Allison/Big_data/Ch-2 landcover/magwar_bre_abd.tif")
+
+x1 <- raster("D:/Allison/Big_data/Ch-2 landcover/base_map_lambert.tif")
+magwar_abd <- projectRaster(bre_abd_mean,x1)
+writeRaster(magwar_abd, filename = "D:/Allison/Big_data/Ch-2 landcover/magwar_bre_abd_lambert.tif")
+
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
 
 
+lc_spdf <- as(mod_pland_ebd, "SpatialPixelsDataFrame")
+lc_df <- as.data.frame(lc_spdf)
+colnames(lc_df) <- c("value", "x", "y")
+
+#making nice raster plots in ggplot:https://stackoverflow.com/questions/33227182/how-to-set-use-ggplot2-to-map-a-raster
+ggplot() +  
+  geom_tile(data=lc_df, aes(x=x, y=y, fill=value), alpha=0.8) + 
+  scale_fill_viridis() +
+  coord_equal() +
+  theme_classic()
+
+plot(x1, legend=F, col = "black")
+plot(magwar_abd, legend = FALSE, col = my_col1, add=T)
