@@ -297,8 +297,17 @@ for(i in 198:238){
   exposure_vals <- getValues(exposure)%>%
     na.omit()
   exposure_vals <- exposure_vals[exposure_vals!=0]
+  exposure_sum <- sum(exposure_vals)
   
-  breeding_exp[[i]]<- exposure_vals
+  bre_vals <- getValues(bre_abd_mean)%>%
+    na.omit()
+  bre_vals <- bre_vals[bre_vals!=0]
+  weight_sum <- sum(bre_vals)
+  
+  exp <- exposure_sum/weight_sum
+
+  
+  breeding_exp[[i]]<- exp
   rm(exposure)
   #detach(package:ebirdst)
   
@@ -632,33 +641,65 @@ load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp_noFCM.RData")
 prebreeding_exp1 <- prebreeding_exp[-114]
 
 func <- function(x) {
-  c(mean = mean(x), se = sd(x)/sqrt(length(x))) 
+  c(sum = sum(x))#, se = sd(x)/sqrt(length(x))) 
 }
 
 breeding <- lapply(breeding_exp1, func)
 names(breeding) <- names
 breeding <- bind_rows(breeding, .id = "species_code")
 breeding$season <- rep("breeding",length(breeding$species_code))
-breeding$mean[108] <- 0 #gycthr - breeds in the far north
-breeding$se[108] <- 0
+breeding$sum[108] <- 0 #gycthr - breeds in the far north, no trees
+#breeding$se[108] <- 0
+load("D:/Allison/Big_data/eBird_outputs/breeding_weights.RData")
+breeding_weights1 <- breeding_weights[-114]
+names(breeding_weights1) <- names
+breeding_weights2 <- bind_rows(breeding_weights1, .id = "species_code")
+breeding_w <- pivot_longer(breeding_weights2, cols = 1:237, names_to= "species_code", values_to = "weight_sum")
+breeding_weighted_abd <- inner_join(breeding, breeding_w)
+breeding_weighted_abd <- breeding_weighted_abd %>%
+  mutate(weighted_abd = sum/weight_sum)
 
 postbreeding <- lapply(postbreeding_exp1, func)
 names(postbreeding) <- names
 postbreeding <- bind_rows(postbreeding, .id = "species_code")
 postbreeding$season <- rep("postbreeding",length(postbreeding$species_code))
+load("D:/Allison/Big_data/eBird_outputs/postbreeding_weights.RData")
+postbreeding_weights1 <- postbreeding_weights[-114]
+names(postbreeding_weights1) <- names
+postbreeding_weights2 <- bind_rows(postbreeding_weights1, .id = "species_code")
+postbreeding_w <- pivot_longer(postbreeding_weights2, cols = 1:237, names_to= "species_code", values_to = "weight_sum")
+postbreeding_weighted_abd <- inner_join(postbreeding, postbreeding_w)
+postbreeding_weighted_abd <- postbreeding_weighted_abd %>%
+  mutate(weighted_abd = sum/weight_sum)
 
 nonbreeding <- lapply(nonbreeding_exp1, func)
 names(nonbreeding) <- names
 nonbreeding <- bind_rows(nonbreeding, .id = "species_code")
 nonbreeding$season <- rep("nonbreeding",length(nonbreeding$species_code))
-nonbreeding$se[90] <- 0 #only one cell
+#nonbreeding$se[90] <- 0 #only one cell
+load("D:/Allison/Big_data/eBird_outputs/nonbreeding_weights.RData")
+nonbreeding_weights1 <- nonbreeding_weights[-114]
+names(nonbreeding_weights1) <- names
+nonbreeding_weights2 <- bind_rows(nonbreeding_weights1, .id = "species_code")
+nonbreeding_w <- pivot_longer(nonbreeding_weights2, cols = 1:237, names_to= "species_code", values_to = "weight_sum")
+nonbreeding_weighted_abd <- inner_join(nonbreeding, nonbreeding_w)
+nonbreeding_weighted_abd <- nonbreeding_weighted_abd %>%
+  mutate(weighted_abd = sum/weight_sum)
 
 prebreeding <- lapply(prebreeding_exp1, func)
 names(prebreeding) <- names
 prebreeding <- bind_rows(prebreeding, .id = "species_code")
 prebreeding$season <- rep("prebreeding",length(prebreeding$species_code))
+load("D:/Allison/Big_data/eBird_outputs/prebreeding_weights.RData")
+prebreeding_weights1 <- prebreeding_weights[-114]
+names(prebreeding_weights1) <- names
+prebreeding_weights2 <- bind_rows(prebreeding_weights1, .id = "species_code")
+prebreeding_w <- pivot_longer(prebreeding_weights2, cols = 1:237, names_to= "species_code", values_to = "weight_sum")
+prebreeding_weighted_abd <- inner_join(prebreeding, prebreeding_w)
+prebreeding_weighted_abd <- prebreeding_weighted_abd %>%
+  mutate(weighted_abd = sum/weight_sum)
 
-availability <- rbind(breeding,postbreeding,nonbreeding,prebreeding)
+availability <- rbind(breeding_weighted_abd,postbreeding_weighted_abd,nonbreeding_weighted_abd,prebreeding_weighted_abd)
 #load("data_outputs/rPI_migrants_2019.RData")
 load("data/species_basic.RData")
 species_data <- species_basic[-114,]
@@ -670,14 +711,16 @@ species_data <- species_basic[-114,]
 
 availability1 <- left_join(availability,species_data)
 #save(availability1, file = "data_outputs/availability_data_nobarren.RData")
-save(availability1, file = "data_outputs/availability_data_noFCM.RData")
+#save(availability1, file = "data_outputs/availability_data_noFCM.RData")
+save(availability1, file = "data_outputs/availability_data_nobarren_updated.RData")
+#save(availability1, file = "data_outputs/availability_data_noFCM.RData")
 
 #### lc data viz ####
 library(ggsci)
 
-load("data_outputs/availability_data_nobarren.RData")
+load("data_outputs/availability_data_nobarren_updated.RData")
 load("data_outputs/availability_data_noFCM.RData")
-names(availability1)[names(availability1) == 'mean'] <- 'Exposure'
+#names(availability1)[names(availability1) == 'mean'] <- 'Exposure'
 
 availability1$season <- factor(availability1$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 availability1$SW_mig <- factor(availability1$SW_mig, levels=c("N","S","NR","R"))
@@ -690,9 +733,9 @@ availability1$SW_mig <- factor(availability1$SW_mig, levels=c("N","S","NR","R"))
 mypal <- pal_npg("nrc", alpha = 1)(4)
 int.plot.ava <- availability1 %>%
   group_by(SW_mig, season) %>%
-  dplyr::summarize(mean = mean(Exposure),
-                   sd = sd(Exposure),
-                   se = sd(Exposure)/sqrt(length(Exposure)))
+  dplyr::summarize(mean = mean(weighted_abd),
+                   sd = sd(weighted_abd),
+                   se = sd(weighted_abd)/sqrt(length(weighted_abd)))
 
 #int.plot1 <- int.plota %>% 
 #  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
@@ -704,7 +747,7 @@ ava_plot_mig <- ggplot(int.plot.ava, aes(x = season, y = mean, group = SW_mig, c
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean Exposure") +
+  ylab("Mean Availability") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -743,11 +786,11 @@ library(ggsignif)
 hist(availability1$sqrt_exp)
 
 availability1 <- availability1 %>%
-  mutate(sqrt_exp = sqrt(Exposure),
-         log_exp = log(Exposure+1))
+  mutate(sqrt_ava = sqrt(weighted_abd),
+         log_ava = log(weighted_abd+1))
 
 #lme4
-mig.exp.lmer <- lmer(sqrt_exp ~ season*SW_mig + (1 | species_code), data = availability1)
+mig.exp.lmer <- lmer(sqrt_ava ~ season*SW_mig + (1 | species_code), data = availability1)
 summary(mig.exp.lmer)
 AIC(mig.exp.lmer)
 anova(mig.exp.lmer)
@@ -757,37 +800,37 @@ anova(mig.exp.lmer)
 #boxplot suggests outliers
 #log transformation did little to help any assumptions
 bxp <- ggboxplot(
-  availability1, x = "season", y = "sqrt_exp",
+  availability1, x = "season", y = "log_ava",
   color = "SW_mig", palette = "jco"
 )
 bxp
 
 outliers.mig <- availability1 %>%
   group_by(season, SW_mig) %>%
-  identify_outliers(sqrt_exp)
-#47 outliers sqrt
-#88 log
+  identify_outliers(log_ava)
+#36
+#27 log
 
 #normality
 #using qq since sample size relatively large
-ggqqplot(availability1, "sqrt_exp", ggtheme = theme_bw()) +
+ggqqplot(availability1, "sqrt_ava", ggtheme = theme_bw()) +
   facet_grid(season ~ SW_mig)
 #looks decent, sqrt best
 
 #homogeneity of variances
 availability1 %>%
   group_by(season) %>%
-  levene_test(sqrt_exp ~ SW_mig)
-levene_test(availability1, sqrt_exp~SW_mig*season)
-#better transformed
-ggplot(availability1, aes(y=sqrt_exp, x=SW_mig))+
+  levene_test(log_ava ~ SW_mig)
+levene_test(availability1, log_ava~SW_mig*season)
+#good either way
+ggplot(availability1, aes(y=sqrt_ava, x=SW_mig))+
   geom_point() +
   facet_wrap(~season)
 #not too bad
 #LMM fairly robust
 
 #homogeneity of covariances
-box_m(availability1[, "sqrt_exp", drop = FALSE], availability1$SW_mig)
+box_m(availability1[, "sqrt_ava", drop = FALSE], availability1$SW_mig)
 #bad, seems like relationship may be driven by outliers
 
 ##post-hoc comparisons
@@ -1066,7 +1109,8 @@ magwar_abd <- projectRaster(bre_abd_mean,x1)
 writeRaster(magwar_abd, filename = "D:/Allison/Big_data/Ch-2 landcover/magwar_bre_abd_lambert.tif")
 
 mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
-
+mod_lc <- projectRaster(mod_pland_ebd,x1)
+plot(mod_lc)
 
 lc_spdf <- as(mod_pland_ebd, "SpatialPixelsDataFrame")
 lc_df <- as.data.frame(lc_spdf)
@@ -1079,5 +1123,11 @@ ggplot() +
   coord_equal() +
   theme_classic()
 
+
+#relative abundance
 plot(x1, legend=F, col = "black")
-plot(magwar_abd, legend = FALSE, col = my_col1, add=T)
+plot(magwar_abd, legend = FALSE, add=T)
+
+#lc
+plot(x1, legend=F, col = "black")
+plot(mod_lc, legend = FALSE, add=T)

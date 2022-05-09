@@ -1,13 +1,13 @@
 {
-    "path" : "D:/Allison/Github_Projects/Ch-2/Ch-2/data_outputs",
+    "path" : "D:/Allison/Github_Projects/Ch-2/Ch-2/data",
     "sortOrder" : [
-        {
-            "ascending" : true,
-            "columnIndex" : 2
-        },
         {
             "ascending" : false,
             "columnIndex" : 4
+        },
+        {
+            "ascending" : true,
+            "columnIndex" : 2
         }
     ]
 }
