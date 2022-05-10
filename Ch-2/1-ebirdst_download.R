@@ -14,7 +14,8 @@ my_species1 <- my_species %>%
 
 setwd("E:/eBird/data/raw/STEM")
 
-set_ebirdst_access_key("tb7or2boq2lc", overwrite = T)
+# set_ebirdst_access_key("tb7or2boq2lc", overwrite = T)
+set_ebirdst_access_key("7329445pci6o", overwrite = T)
 
 for(i in 1:length(my_species1$species_code)){
 

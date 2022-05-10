@@ -275,3 +275,93 @@ for(i in 161:238){
 
 library(beepr)
 beep("mario")
+
+#reevir is still missing
+
+library(ebirdst)
+x <- ebirdst_runs
+ebirdst_download("example_data")
+
+species<-"Red-eyed Vireo"
+path = rappdirs::user_data_dir("ebirdst")
+species <- get_species(species)
+which_run <- which(ebirdst::ebirdst_runs$species_code == species)
+run <- ebirdst::ebirdst_runs$run_name[which_run]
+key<-Sys.getenv("EBIRDST_KEY")
+api_url <- "https://st-download.ebird.org/v1/"
+list_obj_url <- stringr::str_glue("{api_url}list-obj/{species}?key={key}")
+files <-jsonlite::read_json(list_obj_url, simplifyVector = TRUE)
+files <- data.frame(file = files)
+files <- files[!stringr::str_detect(files$file, "\\.db$"), , drop = FALSE]
+files$src_path <- stringr::str_glue("{api_url}fetch?objKey={files$file}",
+                                    "&key={key}")
+files$dest_path <- file.path(path, files$file)
+files$exists <- file.exists(files$dest_path)
+dirs <- unique(dirname(files$dest_path))
+for (d in dirs) {
+  dir.create(d, showWarnings = FALSE, recursive = TRUE)
+}
+
+old_timeout <- getOption("timeout")
+options(timeout = max(3000, old_timeout))
+
+for (i in seq_len(nrow(files))) {
+  dl_response <- utils::download.file(files$src_path[i],
+                                      files$dest_path[i],
+                                      mode = "wb")
+  if (dl_response != 0) {
+    stop("Error downloading file: ", files$file[i])
+  }
+}
+
+
+
+revi_bre <- data.frame(species_code="reevir1",
+                       sum=exposure_sum,
+                       season="breeding",
+                       weight_sum=weight_sum,
+                       weighted_abd=exp,
+                       group="migrant",
+                       SW_mig="N",
+                       diet2="I",
+                       sw_foraging="F")
+
+revi_postbre <- data.frame(species_code="reevir1",
+                       sum=exposure_sum,
+                       season="postbreeding",
+                       weight_sum=weight_sum,
+                       weighted_abd=exp,
+                       group="migrant",
+                       SW_mig="N",
+                       diet2="I",
+                       sw_foraging="F")
+
+revi_nonbre <- data.frame(species_code="reevir1",
+                           sum=exposure_sum,
+                           season="nonbreeding",
+                           weight_sum=weight_sum,
+                           weighted_abd=exp,
+                           group="migrant",
+                           SW_mig="N",
+                           diet2="I",
+                           sw_foraging="F")
+
+revi_prebre <- data.frame(species_code="reevir1",
+                          sum=exposure_sum,
+                          season="prebreeding",
+                          weight_sum=weight_sum,
+                          weighted_abd=exp,
+                          group="migrant",
+                          SW_mig="N",
+                          diet2="I",
+                          sw_foraging="F")
+
+
+availability_revi_noFCM <- rbind(revi_bre, revi_postbre,revi_nonbre, revi_prebre)
+
+setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
+save(availability, file = "data_outputs/availability_data_nobarren_updated.RData")
+save(availability_revi_noFCM, file = "data_outputs/availability_data_noFCM_revi.RData")
+load("data_outputs/availability_data_noFCM_revi.RData")
+availability <- rbind(availability1,availability_revi_noFCM)
+save(availability, file = "data_outputs/availability_data_noFCM_updated.RData")

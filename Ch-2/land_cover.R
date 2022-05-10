@@ -403,10 +403,17 @@ for(i in 146:238){
   exposure_vals <- getValues(exposure)%>%
     na.omit()
   exposure_vals <- exposure_vals[exposure_vals!=0]
+  exposure_sum <- sum(exposure_vals)
   
-  postbreeding_exp[[i]]<- exposure_vals
-  rm(exposure)
-  #detach(package:ebirdst)
+  postbre_vals <- getValues(postbre_abd_mean)%>%
+    na.omit()
+  postbre_vals <- postbre_vals[postbre_vals!=0]
+  weight_sum <- sum(postbre_vals)
+  
+  exp <- exposure_sum/weight_sum
+  
+  
+  postbreeding_exp[[i]]<- exp
   
 }
 
@@ -499,10 +506,18 @@ for(i in 227:238){
   exposure_vals <- getValues(exposure)%>%
     na.omit()
   exposure_vals <- exposure_vals[exposure_vals!=0]
+  exposure_sum <- sum(exposure_vals)
   
-  nonbreeding_exp[[i]]<- exposure_vals
-  rm(exposure)
-  #detach(package:ebirdst)
+  nonbre_vals <- getValues(nonbre_abd_mean)%>%
+    na.omit()
+  nonbre_vals <- nonbre_vals[nonbre_vals!=0]
+  weight_sum <- sum(nonbre_vals)
+  
+  exp <- exposure_sum/weight_sum
+  
+  
+  nonbreeding_exp[[i]]<- exp
+  
   
 }
 
@@ -598,11 +613,17 @@ for(i in 154:238){
   exposure_vals <- getValues(exposure)%>%
     na.omit()
   exposure_vals <- exposure_vals[exposure_vals!=0]
+  exposure_sum <- sum(exposure_vals)
   
-  prebreeding_exp[[i]]<- exposure_vals
-  rm(exposure)
-  #detach(package:ebirdst)
+  prebre_vals <- getValues(prebre_abd_mean)%>%
+    na.omit()
+  prebre_vals <- prebre_vals[prebre_vals!=0]
+  weight_sum <- sum(prebre_vals)
   
+  exp <- exposure_sum/weight_sum
+  
+  
+  prebreeding_exp[[i]]<- exp
 }
 
 library(beepr)
@@ -628,17 +649,12 @@ library(ebirdst)
 
 load("D:/Allison/Big_data/eBird_outputs/breeding_exp_nobarren.RData")
 load("D:/Allison/Big_data/eBird_outputs/breeding_exp_noFCM.RData")
-#breeding_exp1 <- breeding_exp[breeding_exp != "reevir1"]too slow
-breeding_exp1 <- breeding_exp[-114]
 load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp_nobarren.RData")
 load("D:/Allison/Big_data/eBird_outputs/postbreeding_exp_noFCM.RData")
-postbreeding_exp1 <- postbreeding_exp[-114]
 load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_nobarren.RData")
 load("D:/Allison/Big_data/eBird_outputs/nonbreeding_exp_noFCM.RData")
-nonbreeding_exp1 <- nonbreeding_exp[-114]
 load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp_nobarren.RData")
 load("D:/Allison/Big_data/eBird_outputs/prebreeding_exp_noFCM.RData")
-prebreeding_exp1 <- prebreeding_exp[-114]
 
 func <- function(x) {
   c(sum = sum(x))#, se = sd(x)/sqrt(length(x))) 
@@ -651,10 +667,9 @@ breeding$season <- rep("breeding",length(breeding$species_code))
 breeding$sum[108] <- 0 #gycthr - breeds in the far north, no trees
 #breeding$se[108] <- 0
 load("D:/Allison/Big_data/eBird_outputs/breeding_weights.RData")
-breeding_weights1 <- breeding_weights[-114]
 names(breeding_weights1) <- names
 breeding_weights2 <- bind_rows(breeding_weights1, .id = "species_code")
-breeding_w <- pivot_longer(breeding_weights2, cols = 1:237, names_to= "species_code", values_to = "weight_sum")
+breeding_w <- pivot_longer(breeding_weights2, cols = 1:238, names_to= "species_code", values_to = "weight_sum")
 breeding_weighted_abd <- inner_join(breeding, breeding_w)
 breeding_weighted_abd <- breeding_weighted_abd %>%
   mutate(weighted_abd = sum/weight_sum)
@@ -664,10 +679,9 @@ names(postbreeding) <- names
 postbreeding <- bind_rows(postbreeding, .id = "species_code")
 postbreeding$season <- rep("postbreeding",length(postbreeding$species_code))
 load("D:/Allison/Big_data/eBird_outputs/postbreeding_weights.RData")
-postbreeding_weights1 <- postbreeding_weights[-114]
 names(postbreeding_weights1) <- names
 postbreeding_weights2 <- bind_rows(postbreeding_weights1, .id = "species_code")
-postbreeding_w <- pivot_longer(postbreeding_weights2, cols = 1:237, names_to= "species_code", values_to = "weight_sum")
+postbreeding_w <- pivot_longer(postbreeding_weights2, cols = 1:238, names_to= "species_code", values_to = "weight_sum")
 postbreeding_weighted_abd <- inner_join(postbreeding, postbreeding_w)
 postbreeding_weighted_abd <- postbreeding_weighted_abd %>%
   mutate(weighted_abd = sum/weight_sum)
@@ -678,10 +692,9 @@ nonbreeding <- bind_rows(nonbreeding, .id = "species_code")
 nonbreeding$season <- rep("nonbreeding",length(nonbreeding$species_code))
 #nonbreeding$se[90] <- 0 #only one cell
 load("D:/Allison/Big_data/eBird_outputs/nonbreeding_weights.RData")
-nonbreeding_weights1 <- nonbreeding_weights[-114]
 names(nonbreeding_weights1) <- names
 nonbreeding_weights2 <- bind_rows(nonbreeding_weights1, .id = "species_code")
-nonbreeding_w <- pivot_longer(nonbreeding_weights2, cols = 1:237, names_to= "species_code", values_to = "weight_sum")
+nonbreeding_w <- pivot_longer(nonbreeding_weights2, cols = 1:238, names_to= "species_code", values_to = "weight_sum")
 nonbreeding_weighted_abd <- inner_join(nonbreeding, nonbreeding_w)
 nonbreeding_weighted_abd <- nonbreeding_weighted_abd %>%
   mutate(weighted_abd = sum/weight_sum)
@@ -691,10 +704,9 @@ names(prebreeding) <- names
 prebreeding <- bind_rows(prebreeding, .id = "species_code")
 prebreeding$season <- rep("prebreeding",length(prebreeding$species_code))
 load("D:/Allison/Big_data/eBird_outputs/prebreeding_weights.RData")
-prebreeding_weights1 <- prebreeding_weights[-114]
 names(prebreeding_weights1) <- names
 prebreeding_weights2 <- bind_rows(prebreeding_weights1, .id = "species_code")
-prebreeding_w <- pivot_longer(prebreeding_weights2, cols = 1:237, names_to= "species_code", values_to = "weight_sum")
+prebreeding_w <- pivot_longer(prebreeding_weights2, cols = 1:238, names_to= "species_code", values_to = "weight_sum")
 prebreeding_weighted_abd <- inner_join(prebreeding, prebreeding_w)
 prebreeding_weighted_abd <- prebreeding_weighted_abd %>%
   mutate(weighted_abd = sum/weight_sum)
@@ -702,7 +714,6 @@ prebreeding_weighted_abd <- prebreeding_weighted_abd %>%
 availability <- rbind(breeding_weighted_abd,postbreeding_weighted_abd,nonbreeding_weighted_abd,prebreeding_weighted_abd)
 #load("data_outputs/rPI_migrants_2019.RData")
 load("data/species_basic.RData")
-species_data <- species_basic[-114,]
 
 # species_data <- migrants_2019 %>%
 #   select(species_code, diet2,sw_foraging,SW_mig)
@@ -713,7 +724,7 @@ availability1 <- left_join(availability,species_data)
 #save(availability1, file = "data_outputs/availability_data_nobarren.RData")
 #save(availability1, file = "data_outputs/availability_data_noFCM.RData")
 save(availability1, file = "data_outputs/availability_data_nobarren_updated.RData")
-#save(availability1, file = "data_outputs/availability_data_noFCM.RData")
+save(availability1, file = "data_outputs/availability_data_noFCM_updated.RData")
 
 #### lc data viz ####
 library(ggsci)
