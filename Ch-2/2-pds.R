@@ -1,5 +1,4 @@
 #partial dependence
-#needs cleanup before pub, res and mig species still separated
 
 library(ebirdst)
 library(dplyr)
@@ -11,20 +10,16 @@ library(here)
 library(DBI)
 library(ggsci)
 
-#need updated run names
+#get updated run names if necessary (current run names are for 2019 data, but they change for each release)
 ebirdst_species <- ebirdst_runs %>%
   dplyr::select(c("species_code","run_name"))
 
 my_species <- read.csv("data/bird_data_v4.csv")
 my_species <- left_join(my_species, ebirdst_species, by = "species_code")
 
-#my_species <- my_species[1:3,]
+setwd("E:/eBird/data/raw/STEM") #where my eBird data is stored
 
-#my_species <- my_species %>%
- # filter(species_code == "amered")
-
-setwd("E:/eBird/data/raw/STEM")
-
+#MODIS land cover codes for all natural land cover classes in the analysis
 natural <- c("mcd12q1_lccs1_fs_c11_1500_pland",
              "mcd12q1_lccs1_fs_c12_1500_pland",
              "mcd12q1_lccs1_fs_c13_1500_pland",
@@ -34,11 +29,12 @@ natural <- c("mcd12q1_lccs1_fs_c11_1500_pland",
              "mcd12q1_lccs1_fs_c21_1500_pland",
              "mcd12q1_lccs3_fs_c27_1500_pland")
 
+#MODIS land cover codes for all modified (agricultural) land cover classes in the analysis
 modified <- c("mcd12q1_lccs2_fs_c25_1500_pland",
               "mcd12q1_lccs2_fs_c35_1500_pland",
-              "mcd12q1_lccs2_fs_c36_1500_pland")#,
-              #"mcd12q1_lccs1_fs_c1_1500_pland")
+              "mcd12q1_lccs2_fs_c36_1500_pland")
 
+#names to go with the codes
 natural1 <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests",                
              "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests",                
              "Mixed Broadleaf/Needleleaf Forests",
@@ -57,11 +53,11 @@ modified1 <- c("Forest/Cropland Mosaics",
 
 
 breeding_pds <- list()
-breeding_nat_mods <- vector(mode = "list", length = length(my_species$species_code))#list()
-breeding_mod_mods <- vector(mode = "list", length = length(my_species$species_code))#list()
+breeding_nat_mods <- vector(mode = "list", length = length(my_species$species_code))
+breeding_mod_mods <- vector(mode = "list", length = length(my_species$species_code))
 
 
-#this loops through 238 species
+#this loops through all 238 species, for breeding period only
 for(i in 1:length(my_species$species_code)){
   
   code <- my_species$species_code[i]
@@ -97,7 +93,6 @@ if(skip_to_next) { next }
   
   for(j in 1:length(natural)){
 
-  #pd_smooth <- plot_pds(pds, natural[3], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, bre_extent) %>%
       filter(predictor == natural[j])
 
@@ -120,19 +115,17 @@ if(skip_to_next) { next }
 
   pds_nat[[j]] <- pds1
   nat_mods[[j]] <- vcov(lm) #note that if there wasn't enough data, the cov matrix was still generated
-  #using the previous lm... shouldn't be a problem so long as you don't use the null pds
-
+  #shouldn't be a problem so long as you don't use the null pds
 
 }
 
 pds_nat1 <- bind_rows(pds_nat)
 
-  #this loops through all impacted pd relationships for each species
+  #this loops through all modified pd relationships for each species
   pds_imp <- list()
 
   for(k in 1:length(modified)){
   
-  #pd_smooth <- plot_pds(pds, impacted[k], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, bre_extent) %>%
       filter(predictor == modified[k])
   
@@ -174,8 +167,9 @@ names(breeding_mod_mods) <- my_species$species_code
 
 breeding_pds1 <- bind_rows(breeding_pds, .id = "species_code")
 
-setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
+#reset working directory to R project - need to switch between harddrive because the dataset is huge
 
+#saving the linear model coefficients and variance-covariance matrices, so that we can use these to bootstrap
 save(breeding_pds1, 
      file = "data_outputs/breeding_pds1_nobarren.RData")
 save(breeding_nat_mods, file = "data_outputs/breeding_nat_mods_nobarren.RData")
@@ -229,7 +223,6 @@ for(i in 1:length(my_species$species_code)){
   
   for(j in 1:length(natural)){
     
-    #pd_smooth <- plot_pds(pds, natural[3], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, postbre_extent) %>%
       filter(predictor == natural[j])
     
@@ -257,12 +250,11 @@ for(i in 1:length(my_species$species_code)){
   
   pds_nat1 <- bind_rows(pds_nat)
   
-  #this loops through all impacted pd relationships for each species
+  #this loops through all modified pd relationships for each species
   pds_imp <- list()
   
   for(k in 1:length(modified)){
     
-    #pd_smooth <- plot_pds(pds, impacted[k], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, postbre_extent) %>%
       filter(predictor == modified[k])
     
@@ -307,7 +299,7 @@ names(postbreeding_mod_mods) <- my_species$species_code
 
 postbreeding_pds1 <- bind_rows(postbreeding_pds, .id = "species_code")
 
-setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
+#reset working directory to R project - need to switch between harddrive because the dataset is huge
 
 save(postbreeding_pds1, 
      file = "data_outputs/postbreeding_pds1_nobarren.RData")
@@ -362,7 +354,6 @@ for(i in 1:length(my_species$species_code)){
   
   for(j in 1:length(natural)){
     
-    #pd_smooth <- plot_pds(pds, natural[3], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, nonbre_extent) %>%
       filter(predictor == natural[j])
     
@@ -390,12 +381,11 @@ for(i in 1:length(my_species$species_code)){
   
   pds_nat1 <- bind_rows(pds_nat)
   
-  #this loops through all impacted pd relationships for each species
+  #this loops through all modified pd relationships for each species
   pds_imp <- list()
   
   for(k in 1:length(modified)){
     
-    #pd_smooth <- plot_pds(pds, impacted[k], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, nonbre_extent) %>%
       filter(predictor == modified[k])
     
@@ -440,7 +430,7 @@ names(nonbreeding_mod_mods) <- my_species$species_code
 
 nonbreeding_pds1 <- bind_rows(nonbreeding_pds, .id = "species_code")
 
-setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
+#reset working directory to R project - need to switch between harddrive because the dataset is huge
 
 save(nonbreeding_pds1, 
      file = "data_outputs/nonbreeding_pds1_nobarren.RData")
@@ -496,7 +486,6 @@ for(i in 1:length(my_species$species_code)){
   
   for(j in 1:length(natural)){
     
-    #pd_smooth <- plot_pds(pds, natural[3], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, prebre_extent) %>%
       filter(predictor == natural[j])
     
@@ -524,12 +513,11 @@ for(i in 1:length(my_species$species_code)){
   
   pds_nat1 <- bind_rows(pds_nat)
   
-  #this loops through all impacted pd relationships for each species
+  #this loops through all modified pd relationships for each species
   pds_imp <- list()
   
   for(k in 1:length(modified)){
     
-    #pd_smooth <- plot_pds(pds, impacted[k], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, prebre_extent) %>%
       filter(predictor == modified[k])
     
@@ -574,163 +562,12 @@ names(prebreeding_mod_mods) <- my_species$species_code
 
 prebreeding_pds1 <- bind_rows(prebreeding_pds, .id = "species_code")
 
-setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
+#reset working directory to R project - need to switch between harddrive because the dataset is huge
 
 save(prebreeding_pds1, 
      file = "data_outputs/prebreeding_pds1_nobarren.RData")
 save(prebreeding_nat_mods, file = "data_outputs/prebreeding_nat_mods_nobarren.RData")
 save(prebreeding_mod_mods, file = "data_outputs/prebreeding_mod_mods_nobarren.RData")
-
-
-####################################################################################
-
-#### RESIDENT NONBREEDING ####
-
-####################################################################################
-library(ebirdst)
-
-#need updated run names
-ebirdst_species <- ebirdst_runs %>%
-  select(c("species_code","run_name"))
-
-my_species <- read.csv("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data/bird_data_v4.csv")
-my_species <- left_join(my_species, ebirdst_species, by = "species_code")
-
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/residents.RData")
-
-res_to_merge <- residents1 %>%
-  dplyr::select(species_code, res_nonbre_start, res_nonbre_end)
-
-my_species_residents <- left_join(res_to_merge, my_species, by = "species_code")
-
-nonbreeding_res_pds <- list()
-nonbreeding_res_nat_mods <- vector(mode = "list", length = length(my_species_residents$species_code))#list()
-nonbreeding_res_mod_mods <- vector(mode = "list", length = length(my_species_residents$species_code))#list()
-
-
-#this loops through 74 resident species
-for(i in 1:length(my_species_residents$species_code)){
-  
-  code <- my_species_residents$species_code[i]
-  
-  start <- my_species_residents %>%
-    filter(species_code==code)%>%
-    {.[["res_nonbre_start"]]}
-  
-  end <- my_species_residents %>%
-    filter(species_code==code)%>%
-    {.[["res_nonbre_end"]]}
-  
-  nonbre_res <- c(start, end)  
-  
-  ext <-  c(xmin = -180, xmax = 180, 
-            ymin = -90, ymax = 90)
-  
-  nonbre_extent <- ebirdst_extent(ext, t = nonbre_res)
-  
-  run_name <- my_species_residents$run_name.y[i]
-  
-  skip_to_next <- FALSE
-  
-  tryCatch(
-    pds <- load_pds(run_name), error = function(e){skip_to_next <<- TRUE})
-  
-  if(skip_to_next) { next }
-  
-  #this loops through all natural pd relationships for each species
-  pds_nat <- list()
-  nat_mods <- list()
-  imp_mods <- list()
-  
-  for(j in 1:length(natural)){
-    
-    #pd_smooth <- plot_pds(pds, natural[3], ext = bre_extent, show_stixel_pds = F, plot = F)
-    data <- ebirdst_subset(pds, nonbre_extent) %>%
-      filter(predictor == natural[j])
-    
-    #some species don't have predictor pd data for certain land cover variables
-    if(nrow(data)>1){
-      lm <- lm(response ~ predictor_value, data = data)
-      coef <- coef(lm)
-      slope <- coef[2]
-      int <- coef[1]
-      
-    }else{
-      coef <- NA
-      slope <- NA
-      int <- NA
-      
-    }
-    
-    pds1 <- data.frame(slope,int,natural1[j],"natural")
-    colnames(pds1)<- c("slope","intercept","lc","state")
-    
-    pds_nat[[j]] <- pds1
-    nat_mods[[j]] <- vcov(lm)
-    
-  }
-  
-  pds_nat1 <- bind_rows(pds_nat)
-  
-  #this loops through all impacted pd relationships for each species
-  pds_imp <- list()
-  
-  for(k in 1:length(modified)){
-    
-    #pd_smooth <- plot_pds(pds, impacted[k], ext = bre_extent, show_stixel_pds = F, plot = F)
-    data <- ebirdst_subset(pds, nonbre_extent) %>%
-      filter(predictor == modified[k])
-    
-    #some species don't have predictor pd data for certain land cover variables
-    if(nrow(data)>1){
-      lm <- lm(response ~ predictor_value, data = data)
-      coef <- coef(lm)
-      slope <- coef[2]
-      int <- coef[1]
-      
-    }else{
-      coef <- NA
-      slope <- NA
-      int <- NA
-      
-    }
-    
-    pds1 <- data.frame(slope,int,modified1[k],"modified")
-    colnames(pds1)<- c("slope","intercept","lc","state")
-    
-    pds_imp[[k]] <- pds1
-    imp_mods[[k]] <- vcov(lm)
-    
-  }
-  
-  pds_imp1 <- bind_rows(pds_imp)
-  
-  pds_all <- rbind(pds_nat1, pds_imp1)
-  
-  nonbreeding_res_pds[[i]] <- pds_all
-  
-  nonbreeding_res_pds[[i]] <- pds_all
-  nonbreeding_res_nat_mods[[i]] <- nat_mods
-  nonbreeding_res_mod_mods[[i]] <- imp_mods
-  
-  
-}
-
-names(nonbreeding_res_pds) <- my_species_residents$species_code
-names(nonbreeding_res_nat_mods) <- my_species_residents$species_code
-names(nonbreeding_res_mod_mods) <- my_species_residents$species_code
-
-nonbreeding_res_pds1 <- bind_rows(nonbreeding_res_pds, .id = "species_code")
-
-
-save(nonbreeding_res_pds1, 
-     file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/nonbreeding_res_pds1.RData")
-save(nonbreeding_res_nat_mods, file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/nonbreeding_res_nat_mods.RData")
-save(nonbreeding_res_mod_mods, file = "C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/nonbreeding_res_mod_mods.RData")
-
-
-
-
 
 
 
@@ -743,15 +580,9 @@ library(MASS)
 library(matrixStats)
 library(tidyverse)
 
-setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
+#reset working directory to R project - need to switch between harddrive because the dataset is huge
 
 my_species <- read.csv("data/bird_data_v4.csv")
-
-#my_species <- my_species[-c(6,206,229),]
-
-#my_species <- my_species %>%
-# filter(species_code == "amered")
-
 
 natural1 <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests",                
               "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests",                
@@ -770,18 +601,9 @@ modified1 <- c("Forest/Cropland Mosaics",
 
 #######################################
 
-#some species pd data broken (on ebird end?)
-#orcori, rebwoo, grhowl
-#fixed
-
-#drops <- c("orcori", "rebwoo", "grhowl")
-#my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
-
 load("data_outputs/breeding_pds1_nobarren.RData")
 breeding_pds1$season <- rep("breeding", length(my_species$species_code))
 load("data_outputs/breeding_nat_mods_nobarren.RData")
-
-#breeding_nat_mods <- breeding_nat_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -842,7 +664,6 @@ species_breeding_nat1 <- bind_rows(species_breeding_nat)
 #breeding modified
 
 load("data_outputs/breeding_mod_mods_nobarren.RData")
-#breeding_mod_mods <- breeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -910,17 +731,9 @@ save(species_breeding_bs, file = "data_outputs/species_breeding_bootstrap_nobarr
 
 #######################################
 
-#some species pd data broken (on ebird end?)
-#orcori, rebwoo, grhowl
-
-#drops <- c("orcori", "rebwoo", "grhowl")
-#my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
-
 load("data_outputs/postbreeding_pds1_nobarren.RData")
 postbreeding_pds1$season <- rep("postbreeding", length(my_species$species_code))
 load("data_outputs/postbreeding_nat_mods_nobarren.RData")
-
-#postbreeding_nat_mods <- postbreeding_nat_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -981,7 +794,6 @@ species_postbreeding_nat1 <- bind_rows(species_postbreeding_nat)
 #postbreeding modified
 
 load("data_outputs/postbreeding_mod_mods_nobarren.RData")
-#postbreeding_mod_mods <- postbreeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1049,17 +861,9 @@ save(species_postbreeding_bs, file = "data_outputs/species_postbreeding_bootstra
 
 #######################################
 
-#some species pd data broken (on ebird end?)
-#orcori, rebwoo, grhowl
-
-#drops <- c("orcori", "rebwoo", "grhowl")
-#my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
-
 load("data_outputs/nonbreeding_pds1_nobarren.RData")
 nonbreeding_pds1$season <- rep("nonbreeding", length(my_species$species_code))
 load("data_outputs/nonbreeding_nat_mods_nobarren.RData")
-
-#nonbreeding_nat_mods <- nonbreeding_nat_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1120,7 +924,6 @@ species_nonbreeding_nat1 <- bind_rows(species_nonbreeding_nat)
 #nonbreeding modified
 
 load("data_outputs/nonbreeding_mod_mods_nobarren.RData")
-#nonbreeding_mod_mods <- nonbreeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1190,17 +993,10 @@ save(species_nonbreeding_bs, file = "data_outputs/species_nonbreeding_bootstrap_
 
 #######################################
 
-#some species pd data broken (on ebird end?)
-#orcori, rebwoo, grhowl
-
-#drops <- c("orcori", "rebwoo", "grhowl")
-#my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
-
 load("data_outputs/prebreeding_pds1_nobarren.RData")
 prebreeding_pds1$season <- rep("prebreeding", length(my_species$species_code))
 load("data_outputs/prebreeding_nat_mods_nobarren.RData")
 
-#prebreeding_nat_mods <- prebreeding_nat_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1261,7 +1057,6 @@ species_prebreeding_nat1 <- bind_rows(species_prebreeding_nat)
 #prebreeding modified
 
 load("data_outputs/prebreeding_mod_mods_nobarren.RData")
-#prebreeding_mod_mods <- prebreeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1323,177 +1118,16 @@ species_prebreeding_bs <- bind_rows(species_prebreeding_nat1, species_prebreedin
 save(species_prebreeding_bs, file = "data_outputs/species_prebreeding_bootstrap_nobarren.RData")
 
 
-#######################################
-
-#### NONBREEDING RESIDENTS bootstrapping ####
-
-#######################################
-
-setwd("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021")
-load("data/my_species_residents.RData")
-
-
-#drops <- c("rebwoo", "grhowl")
-#my_species_residents1 <-  my_species_residents$species_code [! my_species_residents$species_code %in% drops]
-
-load("data_outputs/nonbreeding_res_pds1.RData")
-nonbreeding_res_pds1$season <- rep("nonbreeding", length(nonbreeding_res_pds1$species_code))
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/nonbreeding_res_nat_mods.RData")
-
-#nonbreeding_res_nat_mods <- nonbreeding_res_nat_mods[-c(29,57)]
-
-#for each model (12 for each species in each season)
-#1000 bootstrap replicates
-
-species_nonbreeding_res_nat <- list()
-
-for(b in 1:length(my_species_residents)){
-  
-  spec <- my_species_residents$species_code[b]
-  
-  boot_reps <- list()
-  
-  #1000 reps of linear model slopes/intercepts accounting for the var/covar
-  for(a in 1:length(natural1)){
-    
-    spec_cov <- nonbreeding_res_nat_mods[[spec]]
-    
-    sp_df <- nonbreeding_res_pds1 %>%
-      filter(state == "natural" & species_code == spec)
-    
-    tryCatch({
-      lc_bs <- MASS::mvrnorm(1000, c(sp_df$intercept[a], sp_df$slope[a]), spec_cov[[a]])
-      
-      lc_bs1 <- as.data.frame(t(lc_bs[,2]))},
-      
-      error = function(e){ lc_bs1 <- as.data.frame(rep(NA, 1000))
-      })
-    
-    boot_reps[[a]] <- lc_bs1
-    
-  }
-  
-  names(boot_reps) <- natural1
-  boot_reps_df <- bind_rows(boot_reps, .id = "lc")
-  boot_reps_df$state <- rep("natural", length(natural1))
-  
-  #average slope for natural landcover types for each species
-  #for each of the 1000 bootstrap estimates
-  #ie gives 1000 averages
-  
-  df <- boot_reps_df %>% 
-    summarise_if(is.numeric, mean, na.rm = T)
-  
-  species_code <- spec
-  state <- "natural"
-  season <- "nonbreeding"
-  
-  df1 <- cbind(species_code, state, season, df)
-  
-  species_nonbreeding_res_nat[[b]] <- df1
-  
-  
-}
-
-species_nonbreeding_res_nat1 <- bind_rows(species_nonbreeding_res_nat)
-
-
-#nonbreeding modified
-
-load("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data_outputs/nonbreeding_res_mod_mods.RData")
-#nonbreeding_res_mod_mods <- nonbreeding_res_mod_mods[-c(29,57)]
-
-#for each model (12 for each species in each season)
-#1000 bootstrap replicates
-
-species_nonbreeding_res_mod <- list()
-
-for(b in 1:length(my_species_residents)){
-  
-  spec <- my_species_residents$species_code[b]
-  
-  boot_reps <- list()
-  
-  #1000 reps of linear model slopes/intercepts accounting for the var/covar
-  for(a in 1:length(modified1)){
-    
-    spec_cov <- nonbreeding_res_mod_mods[[spec]]
-    
-    sp_df <- nonbreeding_res_pds1 %>%
-      filter(state == "modified" & species_code == spec)
-    
-    tryCatch({
-      lc_bs <- MASS::mvrnorm(1000, c(sp_df$intercept[a], sp_df$slope[a]), spec_cov[[a]])
-      
-      lc_bs1 <- as.data.frame(t(lc_bs[,2]))},
-      
-      error = function(e){ lc_bs1 <- as.data.frame(rep(NA, 1000))
-      })
-    
-    boot_reps[[a]] <- lc_bs1
-    
-  }
-  
-  names(boot_reps) <- modified1
-  boot_reps_df <- bind_rows(boot_reps, .id = "lc")
-  boot_reps_df$state <- rep("modified", length(modified1))
-  
-  #average slope for natural landcover types for each species
-  #for each of the 1000 bootstrap estimates
-  #ie gives 1000 averages
-  
-  df <- boot_reps_df %>% 
-    summarise_if(is.numeric, mean, na.rm = T)
-  
-  species_code <- spec
-  state <- "modified"
-  season <- "nonbreeding"
-  
-  df1 <- cbind(species_code, state, season, df)
-  
-  species_nonbreeding_res_mod[[b]] <- df1
-  
-  
-}
-
-species_nonbreeding_res_mod1 <- bind_rows(species_nonbreeding_res_mod)
-
-species_nonbreeding_res_bs <- bind_rows(species_nonbreeding_res_nat1, species_nonbreeding_res_mod1)
-
-save(species_nonbreeding_res_bs, file = "data_outputs/species_nonbreeding_res_bootstrap.RData")
-
+#################################################################
 
 #### combine bootstrapping ####
 
 #################################################################
 
 load("data_outputs/species_breeding_bootstrap_nobarren.RData")
-#load("data_outputs/species_nonbreeding_res_bootstrap.RData")
-#load("data/my_species_residents.RData")
-
-#resident_bootstrap_all <- bind_rows(species_breeding_bs, species_nonbreeding_res_bs) %>%
-  filter(species_code %in% my_species_residents$species_code)
-
-#save(resident_bootstrap_all, file = "data_outputs/resident_bootstrap_all.RData")
-
 load("data_outputs/species_postbreeding_bootstrap_nobarren.RData")
 load("data_outputs/species_nonbreeding_bootstrap_nobarren.RData")
 load("data_outputs/species_prebreeding_bootstrap_nobarren.RData")
-
-load("data_outputs/migrants.RData")
-migrant_species <- unique(migrants$species_code)
-#drops <- c("orcori", "rebwoo", "grhowl")
-#my_species_migrants <-  migrant_species [! migrant_species %in% drops]
-
-
-
-#migrants_bootstrap_all <- bind_rows(species_breeding_bs,
-#                                    species_postbreeding_bs,
-#                                    species_nonbreeding_bs,
-#                                    species_prebreeding_bs) %>%
-#  filter(species_code %in% migrant_species)
-
-#save(migrants_bootstrap_all, file = "data_outputs/migrants_bootstrap_all.RData")
 
 bootstrap_all <- bind_rows(species_breeding_bs,
                            species_postbreeding_bs,
@@ -1502,362 +1136,3 @@ bootstrap_all <- bind_rows(species_breeding_bs,
 
 save(bootstrap_all, file = "data_outputs/bootstrap_all_nobarren.RData")
 
-#############################################################################################################
-
-                                   #### data vis ####
-
-#############################################################################################################
-
-#species_basic <- read_excel("data/bird_data_v5.xlsx")
-
-#species_basic <- species_basic %>%
-#  mutate(diet2 = sw_diet)
-#species_basic$diet2 <- gsub("N", "F", species_basic$diet2)
-
-#species_basic <- species_basic %>%
-#  select(c("species_code", "group", "SW_mig", "diet2", "sw_foraging"))
-
-#save(species_basic, file = "data/species_basic.RData")
-
-#listing species in each guild
-library(readxl)
-library(matrixStats)
-
-load("data/species_basic.RData")
-
-
-################## migratory strategy ####
-
-#load("data_outputs/migrants_bootstrap_all.RData")
-#load("data_outputs/resident_bootstrap_all.RData")
-load("data_outputs/bootstrap_all.RData")
-
-#bootstrap_all <- rbind(migrants_bootstrap_all,resident_bootstrap_all)
-
-#migrants_bootstrap_all$trajectory <- ifelse(pds_all2$pd_slope >=0, "P", "N")
-
-#migrants <- left_join(migrants_bootstrap_all, species_basic, by = "species_code")
-
-all_data <- left_join(bootstrap_all,species_basic,by="species_code")
-
-all_data1 <- all_data %>%
-  group_by(season, SW_mig, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(all_data1[,-c(1:3)], stdev =apply(all_data1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(all_data1[,-c(1:3)], mean =apply(all_data1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-migstrat <- all_data1 %>%
-  dplyr::select(1:3)
-migstrat$mean <- mean
-migstrat$stdev <- stdev
-
-#save(mig_migstrat, file = "data_outputs/mig_migstrat.RData")
-save(migstrat, file = "data_outputs/migstrat.RData")
-
-#plot
-migstrat$season <- factor(migstrat$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-pd <- position_dodge(0.1) # move them .05 to the left and right
-
-ggplot(aes(y = mean, x = season, col = state), data = migstrat) +
-  geom_point(position = pd)+
-  geom_errorbar(aes(ymin=mean-stdev, ymax=mean+stdev), width=.1, position=pd)+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(col = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~SW_mig)
-
-#boxplot
-all_data3 <- all_data1 %>%
-  pivot_longer(!c("season","SW_mig","state"), names_to = "No.", values_to = "PD" )
-
-all_data4 <- all_data3 %>%
-  pivot_wider(names_from = "state", values_from = "PD")
-
-all_data4 <- all_data4 %>%
-  mutate(ratio = natural/modified)
-
-#migrants3$season <- factor(migrants3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-all_data4$season <- factor(all_data4$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-
-ggplot(aes(y = PD, x = season, fill = state), data = all_data3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~SW_mig)
-
-ggplot(aes(y = ratio, x = season, fill = SW_mig), data = all_data4)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Ratio of proportion positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()
-
-################################## migrant diet ####
-
-load("data_outputs/migrants_bootstrap_all.RData")
-
-#migrants_bootstrap_all$trajectory <- ifelse(pds_all2$pd_slope >=0, "P", "N")
-
-migrants <- left_join(migrants_bootstrap_all, species_basic, by = "species_code")
-
-migrants1 <- migrants %>%
-  group_by(season, diet2, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(migrants1[,-c(1:3)], stdev =apply(migrants1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(migrants1[,-c(1:3)], mean =apply(migrants1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-mig_diet <- migrants1 %>%
-  dplyr::select(1:3)
-mig_diet$mean <- mean
-mig_diet$stdev <- stdev
-
-save(mig_diet, file = "data_outputs/mig_diet.RData")
-
-#plot
-mig_diet$season <- factor(mig_diet$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-pd <- position_dodge(0.1) # move them .05 to the left and right
-
-ggplot(aes(y = mean, x = season, col = state), data = mig_diet) +
-  geom_point(position = pd)+
-  geom_errorbar(aes(ymin=mean-stdev, ymax=mean+stdev), width=.1, position=pd)+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(col = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~diet2)
-
-#boxplot
-migrants3 <- migrants1 %>%
-  pivot_longer(!c("season","diet2","state"), names_to = "No.", values_to = "PD" )
-
-#migrants3$season <- factor(migrants3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-
-ggplot(aes(y = PD, x = season, fill = state), data = migrants3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~diet2)
-
-################################## migrant foraging ####
-
-load("data_outputs/migrants_bootstrap_all.RData")
-
-#migrants_bootstrap_all$trajectory <- ifelse(pds_all2$pd_slope >=0, "P", "N")
-
-migrants <- left_join(migrants_bootstrap_all, species_basic, by = "species_code")
-
-migrants1 <- migrants %>%
-  group_by(season, sw_foraging, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(migrants1[,-c(1:3)], stdev =apply(migrants1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(migrants1[,-c(1:3)], mean =apply(migrants1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-mig_foraging <- migrants1 %>%
-  dplyr::select(1:3)
-mig_foraging$mean <- mean
-mig_foraging$stdev <- stdev
-
-save(mig_foraging, file = "data_outputs/mig_foraging.RData")
-
-#plot
-mig_foraging$season <- factor(mig_foraging$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-pd <- position_dodge(0.1) # move them .05 to the left and right
-
-ggplot(aes(y = mean, x = season, col = state), data = mig_foraging) +
-  geom_point(position = pd)+
-  geom_errorbar(aes(ymin=mean-stdev, ymax=mean+stdev), width=.1, position=pd)+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(col = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~sw_foraging)
-
-#boxplot
-migrants3 <- migrants1 %>%
-  pivot_longer(!c("season","sw_foraging","state"), names_to = "No.", values_to = "PD" )
-
-#migrants3$season <- factor(migrants3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-
-ggplot(aes(y = PD, x = season, fill = state), data = migrants3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~sw_foraging)
-
-
-########## resident species ####
-
-load("data_outputs/resident_bootstrap_all.RData")
-load("data/species_basic.RData")
-
-
-residents <- left_join(resident_bootstrap_all, species_basic, by = "species_code")
-
-################################## residents diet ####
-
-residents1 <- residents %>%
-  group_by(season, diet2, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(residents1[,-c(1:3)], stdev =apply(residents1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(residents1[,-c(1:3)], mean =apply(residents1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-res_diet <- residents1 %>%
-  dplyr::select(1:3)
-res_diet$mean <- mean
-res_diet$stdev <- stdev
-
-save(res_diet, file = "data_outputs/res_diet.RData")
-
-#plot
-#res_diet$season <- factor(res_diet$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-pd <- position_dodge(0.1) # move them .05 to the left and right
-
-ggplot(aes(y = mean, x = season, col = state), data = res_diet) +
-  geom_point(position = pd)+
-  geom_errorbar(aes(ymin=mean-stdev, ymax=mean+stdev), width=.1, position=pd)+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(col = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~diet2)
-
-#boxplot
-residents3 <- residents1 %>%
-  pivot_longer(!c("season","diet2","state"), names_to = "No.", values_to = "PD" )
-
-ggplot(aes(y = PD, x = season, fill = state), data = residents3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~diet2)
-
-################################## residents foraging ####
-
-residents1 <- residents %>%
-  group_by(season, sw_foraging, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(residents1[,-c(1:3)], stdev =apply(residents1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(residents1[,-c(1:3)], mean =apply(residents1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-res_foraging <- residents1 %>%
-  dplyr::select(1:3)
-res_foraging$mean <- mean
-res_foraging$stdev <- stdev
-
-save(res_foraging, file = "data_outputs/res_foraging.RData")
-
-#plot
-#res_foraging$season <- factor(res_foraging$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-pd <- position_dodge(0.1) # move them .05 to the left and right
-
-ggplot(aes(y = mean, x = season, col = state), data = res_foraging) +
-  geom_point(position = pd)+
-  geom_errorbar(aes(ymin=mean-stdev, ymax=mean+stdev), width=.1, position=pd)+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(col = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~sw_foraging)
-
-#boxplot
-residents3 <- residents1 %>%
-  pivot_longer(!c("season","sw_foraging","state"), names_to = "No.", values_to = "PD" )
-
-ggplot(aes(y = PD, x = season, fill = state), data = residents3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~sw_foraging)
-
-
-#############################################################################################
-
-#### pd models ####
-
-#############################################################################################
-
-library(lme4)
-library(nlme)
-
-
-migrants_long <- migrants %>%
-  pivot_longer(!c("species_code","state","season","group","SW_mig","diet2","sw_foraging"), 
-               names_to = "No.", values_to = "PD" )
-
-migrants_long1 <- migrants_long %>%
-  group_by(season, species_code, state)%>%
-  summarise(mean_pd = mean(PD))
-
-migrants_long2 <- left_join(migrants_long1, species_basic, by = "species_code")
-migrants_long2 <- migrants_long2 %>%
-  pivot_wider(names_from = "state", values_from = "mean_pd") %>%
-  mutate(ratio = natural/modified)
-
-
-save(migrants_long2, file = "data/migrants_long2.RData")
-
-mig.stat.pd.lme <- lme(PD ~ season*SW_mig + state*season, data = migrants3, random = ~ 1 | No.)
-summary(mig.stat.pd.lme)
-anova(mig.stat.pd.lme)
-
-mig.stat.lmer <- lmer(SHM ~ season*SW_mig + (1 | species_code), data = migrants)
-summary(mig.stat.lmer)
-AIC(mig.stat.lmer)

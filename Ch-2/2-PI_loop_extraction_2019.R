@@ -1,4 +1,4 @@
-#PI_loop_extraction 2019 data
+#PI loop extraction 2019 data
 
 library(tidyverse)
 library(ebirdst)
@@ -10,8 +10,7 @@ setwd("E:/eBird/data/raw/STEM")
 ebirdst_species <- ebirdst_runs %>%
   select(c("species_code","run_name"))
 
-#new dataset with resident species, traits - 29.3.2021
-my_species <- read.csv("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data/bird_data_v4.csv")
+my_species <- read.csv("data/bird_data_v4.csv")
 my_species <- left_join(my_species, ebirdst_species, by = "species_code")
 
 species_codes <- my_species$species_code
@@ -81,7 +80,7 @@ pis<-breeding_pis3 %>%
 #calculate rPI from PI - after removing other predictors
 library(plyr)
 
-pis2 <- pis[,6:51] #pis[,4:29]
+pis2 <- pis[,6:51] 
 pis3 <- colwise(as.numeric)(pis2)
 
 pis3 <- pis3 %>%
@@ -97,13 +96,11 @@ rpis_id <- cbind(pis[,1:5], rpis)
 
 rpis_id_breeding <- rpis_id
 
-#setwd("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021")
-
 #save(rpis_id_breeding, file = "data_outputs/rpis_breeding_2019.RData")
 load("data_outputs/rpis_breeding_2019.RData")
 
-#now need to decide which landcover classes are "natural"
-#and which are "impacted"
+#now need to specify which landcover classes are "natural"
+#and which are "modified"
 colnames(rpis_id_breeding)
 
 natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests PLAND",                
@@ -113,20 +110,19 @@ natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests P
              "Open Forests PLAND", "Woody Wetlands PLAND") 
 
 
-impacted <- c("Forest/Cropland Mosaics PLAND",                    
+modified <- c("Forest/Cropland Mosaics PLAND",                    
               "Natural Herbaceous/Croplands Mosaics PLAND",       
               "Herbaceous Croplands PLAND")
 
 
 rpis_cover <- rpis_id_breeding %>%
   mutate(natural = rowSums(select(., all_of(natural))),
-         impacted = rowSums(select(., all_of(impacted))))#,
-         #ratio = (modified+1)/(natural+1))
+         modified = rowSums(select(., all_of(modified))))
 
-#new - rescale for only modified vs natural, instead of using ratio
-#change for ease of comprehension, same basic relationship
+#rescale for only modified vs natural
+#this is not the most seamless coding but parts of the analysis changed over time
 rpis_cover <- rpis_cover %>%
-  mutate(modified = impacted/(impacted+natural),
+  mutate(modified = modified/(modified+natural),
          forest = 1-modified)
 
 breeding <- rpis_cover %>%
@@ -134,9 +130,7 @@ breeding <- rpis_cover %>%
   dplyr::summarize(modified_rPI = mean(modified, na.rm = TRUE),
                    modrPI_var = var(modified, na.rm = TRUE),
                    natural_rPI = mean(forest, na.rm = TRUE),
-                   natrPI_var = var(forest, na.rm = TRUE))#,
-                   #impacted1 = mean(impacted, na.rm = TRUE),
-                   #imp_var = var(impacted, na.rm = TRUE))
+                   natrPI_var = var(forest, na.rm = TRUE))
 
 load("data/species_basic.RData")
 
@@ -167,7 +161,7 @@ for(i in 1:length(my_species$species_code)){
   
   start <- my_species %>%
     filter(species_code==code)%>%
-    {.[["postbreeding_migration_start_dt"]]}
+    {.[["postbreeding_migration_start_dt"]]} #note that it isn't actually migration if resident species, but the column is called this from the ebird data
   
   end <- my_species %>%
     filter(species_code==code)%>%
@@ -209,7 +203,7 @@ pis<-postbreeding_pis3 %>%
 #calculate rPI from PI - after removing other predictors
 library(plyr)
 
-pis2 <- pis[,6:51] #pis[,4:29]
+pis2 <- pis[,6:51] 
 pis3 <- colwise(as.numeric)(pis2)
 
 pis3 <- pis3 %>%
@@ -225,13 +219,11 @@ rpis_id <- cbind(pis[,1:5], rpis)
 
 rpis_id_postbreeding <- rpis_id
 
-#setwd("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021")
-
 #save(rpis_id_postbreeding, file = "data_outputs/rpis_postbreeding_2019.RData")
 load("data_outputs/rpis_postbreeding_2019.RData")
 
 #now need to decide which landcover classes are "natural"
-#and which are "impacted"
+#and which are "modified"
 colnames(rpis_id_postbreeding)
 
 natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests PLAND",                
@@ -241,19 +233,17 @@ natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests P
              "Open Forests PLAND", "Woody Wetlands PLAND") 
 
 
-impacted <- c("Forest/Cropland Mosaics PLAND",                    
+modified <- c("Forest/Cropland Mosaics PLAND",                    
               "Natural Herbaceous/Croplands Mosaics PLAND",       
               "Herbaceous Croplands PLAND" )
 
 rpis_cover <- rpis_id_postbreeding %>%
   mutate(natural = rowSums(select(., all_of(natural))),
-         impacted = rowSums(select(., all_of(impacted))))#,
-         #ratio = (impacted+1)/(natural+1))
+         modified = rowSums(select(., all_of(modified))))
 
-#new - rescale for only modified vs natural, instead of using ratio
-#change for ease of comprehension, same basic relationship
+#rescale for only modified vs natural
 rpis_cover <- rpis_cover %>%
-  mutate(modified = impacted/(impacted+natural),
+  mutate(modified = modified/(modified+natural),
          forest = 1-modified)
 
 postbreeding <- rpis_cover %>%
@@ -261,9 +251,7 @@ postbreeding <- rpis_cover %>%
   dplyr::summarize(modified_rPI = mean(modified, na.rm = TRUE),
                    modrPI_var = var(modified, na.rm = TRUE),
                    natural_rPI = mean(forest, na.rm = TRUE),
-                   natrPI_var = var(forest, na.rm = TRUE))#,
-#impacted1 = mean(impacted, na.rm = TRUE),
-#imp_var = var(impacted, na.rm = TRUE))
+                   natrPI_var = var(forest, na.rm = TRUE))
 
 load("data/species_basic.RData")
 
@@ -325,7 +313,7 @@ colnames(nonbreeding_pis1) <- tidy
 nonbreeding_pis2 <- nonbreeding_pis1[, tidy]
 
 
-nonbreeding_pis3 <- nonbreeding_pis2#q
+nonbreeding_pis3 <- nonbreeding_pis2
 
 #filter to land cover only
 drops <- c("Is Stationary", "Score", "Year", "Day", "Solar Noon Diff", "Effort Hours", "Effort Distance (km)", "Number Observers", "Eastness Median", "Eastness SD", "Elevation Median", "Elevation SD", "Island", "Northness Median", "Northness SD", "Nighttime Lights")
@@ -336,7 +324,7 @@ pis<-nonbreeding_pis3 %>%
 #calculate rPI from PI - after removing other predictors
 library(plyr)
 
-pis2 <- pis[,6:51] #pis[,4:29]
+pis2 <- pis[,6:51] 
 pis3 <- colwise(as.numeric)(pis2)
 
 pis3 <- pis3 %>%
@@ -352,14 +340,11 @@ rpis_id <- cbind(pis[,1:5], rpis)
 
 rpis_id_nonbreeding <- rpis_id
 
-#setwd("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021")
-
 #save(rpis_id_nonbreeding, file = "data_outputs/rpis_nonbreeding_2019.RData")
 load("data_outputs/rpis_nonbreeding_2019.RData")
 
-#now need to decide which landcover classes are "natural"
-#and which are "impacted"
-#colnames(rpis_id_nonbreeding)
+#now need to specifify which landcover classes are "natural"
+#and which are "modified"
 
 natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests PLAND",                
              "Deciduous Needleleaf Forests PLAND","Deciduous Broadleaf Forests PLAND",                
@@ -368,20 +353,18 @@ natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests P
              "Open Forests PLAND", "Woody Wetlands PLAND") 
 
 
-impacted <- c("Forest/Cropland Mosaics PLAND",                    
+modified <- c("Forest/Cropland Mosaics PLAND",                    
               "Natural Herbaceous/Croplands Mosaics PLAND",       
               "Herbaceous Croplands PLAND")
 
 
 rpis_cover <- rpis_id_nonbreeding %>%
   mutate(natural = rowSums(select(., all_of(natural))),
-         impacted = rowSums(select(., all_of(impacted))))#,
-         #ratio = (impacted+1)/(natural+1))
+         modified = rowSums(select(., all_of(modified))))
 
-#new - rescale for only modified vs natural, instead of using ratio
-#change for ease of comprehension, same basic relationship
+#rescale for only modified vs natural
 rpis_cover <- rpis_cover %>%
-  mutate(modified = impacted/(impacted+natural),
+  mutate(modified = modified/(modified+natural),
          forest = 1-modified)
 
 nonbreeding <- rpis_cover %>%
@@ -389,9 +372,7 @@ nonbreeding <- rpis_cover %>%
   dplyr::summarize(modified_rPI = mean(modified, na.rm = TRUE),
                    modrPI_var = var(modified, na.rm = TRUE),
                    natural_rPI = mean(forest, na.rm = TRUE),
-                   natrPI_var = var(forest, na.rm = TRUE))#,
-#impacted1 = mean(impacted, na.rm = TRUE),
-#imp_var = var(impacted, na.rm = TRUE))
+                   natrPI_var = var(forest, na.rm = TRUE))
 
 
 load("data/species_basic.RData")
@@ -481,14 +462,11 @@ rpis_id <- cbind(pis[,1:5], rpis)
 
 rpis_id_prebreeding <- rpis_id
 
-#setwd("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021")
-
 #save(rpis_id_prebreeding, file = "data_outputs/rpis_prebreeding_2019.RData")
 load("data_outputs/rpis_prebreeding_2019.RData")
 
-#now need to decide which landcover classes are "natural"
-#and which are "impacted"
-#colnames(rpis_id_prebreeding)
+#now need to specify which landcover classes are "natural"
+#and which are "modified"
 
 natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests PLAND",                
              "Deciduous Needleleaf Forests PLAND","Deciduous Broadleaf Forests PLAND",                
@@ -497,20 +475,18 @@ natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests P
              "Open Forests PLAND", "Woody Wetlands PLAND") 
 
 
-impacted <- c("Forest/Cropland Mosaics PLAND",                    
+modified <- c("Forest/Cropland Mosaics PLAND",                    
               "Natural Herbaceous/Croplands Mosaics PLAND",       
               "Herbaceous Croplands PLAND" )
 
 
 rpis_cover <- rpis_id_prebreeding %>%
   mutate(natural = rowSums(select(., all_of(natural))),
-         impacted = rowSums(select(., all_of(impacted))))#,
-         #ratio = (impacted+1)/(natural+1))
+         modified = rowSums(select(., all_of(modified))))
 
-#new - rescale for only modified vs natural, instead of using ratio
-#change for ease of comprehension, same basic relationship
+#rescale for only modified vs natural
 rpis_cover <- rpis_cover %>%
-  mutate(modified = impacted/(impacted+natural),
+  mutate(modified = modified/(modified+natural),
          forest = 1-modified)
 
 prebreeding <- rpis_cover %>%
@@ -518,9 +494,7 @@ prebreeding <- rpis_cover %>%
   dplyr::summarize(modified_rPI = mean(modified, na.rm = TRUE),
                    modrPI_var = var(modified, na.rm = TRUE),
                    natural_rPI = mean(forest, na.rm = TRUE),
-                   natrPI_var = var(forest, na.rm = TRUE))#,
-#impacted1 = mean(impacted, na.rm = TRUE),
-#imp_var = var(impacted, na.rm = TRUE))
+                   natrPI_var = var(forest, na.rm = TRUE))
 
 load("data/species_basic.RData")
 
@@ -528,7 +502,7 @@ prebreeding_rpi_data <- inner_join(prebreeding, species_basic, by = "species_cod
 #save(prebreeding_rpi_data, file = "data_outputs/IHM_prebreeding_rpi_data_2019.RData")
 save(prebreeding_rpi_data, file = "data_outputs/prebreeding_rpi_data_2019.RData")
 
-#create migrants data
+#create migrants data - note this is actually migrants and residents (analysis of these groups was originally separated)
 load("data_outputs/breeding_rpi_data_2019.RData")
 breeding_rpi_data$season <- rep("breeding", length(breeding_rpi_data$species_code))
 load("data_outputs/postbreeding_rpi_data_2019.RData")

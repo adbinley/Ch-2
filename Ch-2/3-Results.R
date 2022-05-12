@@ -18,7 +18,7 @@ library(ggsignif)
 #### Figure 1 ####
 
 load("data_outputs/rPI_migrants_2019.RData") #now without barren
-load("data_outputs/rPI_migrants_alt.RData")
+load("data_outputs/rPI_migrants_alt.RData") #noFCM
 
 ##migratory strategy - rPIs
 
@@ -27,6 +27,7 @@ mig.stat.lmer <- lmer(modified_rPI ~ season*SW_mig + (1 | species_code), data = 
 summary(mig.stat.lmer)
 AIC(mig.stat.lmer)
 anova(mig.stat.lmer)
+rsquared(mig.stat.lmer)
 
 #assumptions
 #boxplot suggests outliers
@@ -44,7 +45,7 @@ outliers.mig <- migrants_2019 %>%
 
 #normality
 #using qq since sample size relatively large
-ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
+norm <- ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
   facet_grid(season ~ SW_mig)
 #looks decent
 
@@ -54,7 +55,7 @@ migrants_2019 %>%
   levene_test(modified_rPI ~ SW_mig)
 levene_test(migrants_2019, modified_rPI~SW_mig*season)
 #fine
-ggplot(migrants_2019, aes(y=modified_rPI, x=SW_mig))+
+var <- ggplot(migrants_2019, aes(y=modified_rPI, x=SW_mig))+
   geom_point() +
   facet_wrap(~season)
 #not too bad
@@ -63,6 +64,20 @@ ggplot(migrants_2019, aes(y=modified_rPI, x=SW_mig))+
 #homogeneity of covariances
 box_m(migrants_2019[, "modified_rPI", drop = FALSE], migrants_2019$SW_mig)
 #seems fine, should be relatively robust
+
+plotlist <- list(bxp,norm,var)
+
+mig_diagnostics <- ggarrange(plotlist=plotlist,
+                     common.legend = T,
+                     ncol=1,
+                     nrow=3,
+                     legend="none",
+                     align="hv")
+
+png("appendix_plots/mig_rPIm_diagnostics_nobarren.png", height = 12, width = 8, units = "in",res=300)
+mig_diagnostics
+dev.off()
+
 
 ##post-hoc comparisons
 
@@ -131,7 +146,7 @@ geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
                 position=position_dodge(0.6)) +
 theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean rPIm") +
+  ylab("Mean rPI") +
  # geom_hline(yintercept=1, linetype="dashed", 
  #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -201,10 +216,13 @@ summary(pd_aov)
 summary(pd_lm)
 library(piecewiseSEM)
 AIC(pd_lm)
+anova(pd_lm)
 
 #assumptions
 par(mfrow=c(2,2))
 plot(pd_lm)
+
+
 
 mig.tukey.pd.table <- emmeans(pd_aov, list(pairwise ~ SW_mig*season), adjust = "holm")
 summary(mig.tukey.pd.table)
@@ -277,8 +295,8 @@ figure1 <- ggarrange(plotlist=plotlist1,
   #annotate_figure(bottom = text_grob("Season", gp = gpar(cex = 1.3)))
 
 #png("fig_outputs/figure1_dot.png", height = 11.5, width = 8, units = "in",res=300)
-png("fig_outputs/figure1_noFCM.png", height = 11.5, width = 8, units = "in",res=300)
-png("fig_outputs/figure1_nobarren.png", height = 9, width = 8, units = "in",res=300)
+png("fig_outputs/figure1_noFCM_updated.png", height = 11.5, width = 8, units = "in",res=300)
+png("fig_outputs/figure1_nobarren_updated.png", height = 9, width = 8, units = "in",res=300)
 figure1
 dev.off()
 
@@ -322,7 +340,7 @@ outliers.diet <- migrants_2019 %>%
 
 #normality
 #using qq since sample size relatively large
-ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
+norm <- ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
   facet_grid(season ~ diet2)
 #pretty decent
 
@@ -332,9 +350,10 @@ migrants_2019 %>%
   group_by(season) %>%
   levene_test(modified_rPI ~ diet2)
 #good 
-ggplot(migrants_2019, aes(y=modified_rPI, x=diet2))+
+var <- ggplot(migrants_2019, aes(y=modified_rPI, x=diet2))+
   geom_point() +
   facet_wrap(~season)
+var
 #greater in insectivores
 
 #homogeneity of covariances
@@ -365,6 +384,18 @@ library(piecewiseSEM)
 rsquared(mig.diet.lmer)
 #rsquared.glmm(mig.stat.lmer)
 AIC(mig.diet.lmer)
+
+plotlist <- list(bxp,norm,var)
+
+diet_diagnostics <- ggarrange(plotlist=plotlist,
+                             common.legend = T,
+                             ncol=1,
+                             nrow=3,
+                             legend="none")
+
+png("appendix_plots/diet_rPIm_diagnostics_nobarren.png", height = 12, width = 8, units = "in",res=300)
+diet_diagnostics
+dev.off()
 
 #vis
 
@@ -410,7 +441,7 @@ fig2a <- ggplot(mig.diet.plot, aes(x = season, y = mean, group = diet2, col = di
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean rPIm") +
+  ylab("Mean rPI") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -469,6 +500,7 @@ pd_aov <- aov(SHM~season*diet2, data = all_data4_diet)
 pd_lm <- lm(SHM~season*diet2, data = all_data4_diet)
 summary(pd_aov)
 summary(pd_lm)
+anova(pd_lm)
 AIC(pd_lm)
 
 #assumptions
@@ -547,8 +579,8 @@ figure2 <- ggarrange(plotlist=plotlist2,
                      align="hv")
 
 #png("fig_outputs/figure2_dot.png", height = 11.5, width = 8, units = "in",res=300)
-png("fig_outputs/figure2_noFCM.png", height = 11.5, width = 8, units = "in",res=300)
-png("fig_outputs/figure2_nobarren.png", height = 9, width = 8, units = "in",res=300)
+png("fig_outputs/figure2_noFCM_updated.png", height = 9, width = 8, units = "in",res=300)
+png("fig_outputs/figure2_nobarren_updated.png", height = 9, width = 8, units = "in",res=300)
 figure2
 dev.off()
 
@@ -589,7 +621,7 @@ outliers.mig <- migrants_2019 %>%
 
 #normality
 #using qq since sample size relatively large
-ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
+norm <- ggqqplot(migrants_2019, "modified_rPI", ggtheme = theme_bw()) +
   facet_grid(season ~ sw_foraging)
 #mostly ok, foliage gleaners in breeding a bit off but not terrible 
 
@@ -598,14 +630,27 @@ migrants_2019 %>%
   group_by(season) %>%
   levene_test(modified_rPI ~ sw_foraging)
 #assumptions met
-ggplot(migrants_2019, aes(y=modified_rPI, x=sw_foraging))+
+var <- ggplot(migrants_2019, aes(y=modified_rPI, x=sw_foraging))+
   geom_point() +
   facet_wrap(~season)
-
 
 #homogeneity of covariances
 box_m(migrants_2019[, "modified_rPI", drop = FALSE], migrants_2019$sw_foraging)
 #assumption met
+
+plotlist <- list(bxp,norm,var)
+
+for_diagnostics <- ggarrange(plotlist=plotlist,
+                              common.legend = T,
+                              ncol=1,
+                              nrow=3,
+                              legend="none")
+
+png("appendix_plots/for_rPIm_diagnostics_nobarren.png", height = 12, width = 8, units = "in",res=300)
+for_diagnostics
+dev.off()
+
+
 
 #mig.diet.lme2 <- lme(SHM ~ season*diet2, data = migrants_diet2, random = ~ 1 | species_code)
 #summary(mig.diet.lme2)
@@ -659,7 +704,7 @@ fig3a <- ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean rPIm") +
+  ylab("Mean rPI") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -723,6 +768,7 @@ pd_lm <- lm(SHM~season*sw_foraging, data = all_data4_for)
 summary(pd_aov)
 summary(pd_lm)
 AIC(pd_lm)
+anova(pd_lm)
 
 #assumptions
 par(mfrow=c(2,2))
@@ -797,8 +843,8 @@ figure3 <- ggarrange(plotlist=plotlist3,
                      align="hv")
 
 #png("fig_outputs/figure3_dot.png", height = 11.5, width = 8, units = "in",res=300)
-png("fig_outputs/figure3_noFCM.png", height = 11.5, width = 8, units = "in",res=300)
-png("fig_outputs/figure3_nobarren.png", height = 9, width = 8, units = "in",res=300)
+png("fig_outputs/figure3_noFCM_updated.png", height = 9, width = 8, units = "in",res=300)
+png("fig_outputs/figure3_nobarren_updated.png", height = 9, width = 8, units = "in",res=300)
 figure3
 dev.off()
 

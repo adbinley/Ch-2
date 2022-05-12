@@ -1,32 +1,27 @@
 #ebird data download
 
-my_species <- read.csv("C:/Users/AllisonBinley/OneDrive - Carleton University/thesis/CH2_2021/data/bird_data_v4.csv")
+my_species1 <- read.csv("data/bird_data_v4.csv") #less clean version of table S4
 
-#setdiff(my_species$species_code, bird_data_v5$species_code)
-
-my_species1 <- my_species %>%
-  filter(species_code == "orcori"|
-           species_code == "grhowl"|
-           species_code == "rebwoo")
-
-#Boo's coding:
+#Boo's coding, left in for posterity:
 #qqqqq22d2irrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaOSUIIIIIIIII
 
-setwd("E:/eBird/data/raw/STEM")
+setwd("E:/eBird/data/raw/STEM") #this is a drive where I downloaded the eBird data to since it is over 600 GB
 
-# set_ebirdst_access_key("tb7or2boq2lc", overwrite = T)
-set_ebirdst_access_key("7329445pci6o", overwrite = T)
+set_ebirdst_access_key() #you will need to get your own access key from the eBird website. I've removed mine here as it is meant to be per user and confidential
 
+#this takes DAYS
 for(i in 1:length(my_species1$species_code)){
 
   spec <- my_species1$species_code[i]
   
 ebirdst_download(
-  species = "reevir1", #spec,
+  species = spec,
   path = getwd(),
-  tifs_only = FALSE,
+  tifs_only = FALSE, #this makes it so that you also get the PI and PD values needed for analysis, in addition to relative abundance rasters
   force = TRUE,
   show_progress = TRUE
 )
 
 }
+
+#ebird data should all be in the designated folder now

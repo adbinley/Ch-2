@@ -286,12 +286,8 @@ for(i in 198:238){
   
   #breeding
   bre_abd <- ebirdst_subset(abd, ext = bre_extent)
-  rm(abd)
   
   bre_abd_mean <- calc(bre_abd, mean)
-  rm(bre_abd)
-  
-  #breeding_rabd[[i]] <- bre_abd_mean
   
   exposure <- bre_abd_mean*mod_pland_ebd
   exposure_vals <- getValues(exposure)%>%
@@ -730,11 +726,11 @@ save(availability1, file = "data_outputs/availability_data_noFCM_updated.RData")
 library(ggsci)
 
 load("data_outputs/availability_data_nobarren_updated.RData")
-load("data_outputs/availability_data_noFCM.RData")
+load("data_outputs/availability_data_noFCM_updated.RData")
 #names(availability1)[names(availability1) == 'mean'] <- 'Exposure'
 
-availability1$season <- factor(availability1$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-availability1$SW_mig <- factor(availability1$SW_mig, levels=c("N","S","NR","R"))
+availability$season <- factor(availability$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
+availability$SW_mig <- factor(availability$SW_mig, levels=c("N","S","NR","R"))
 
 
 
@@ -742,14 +738,11 @@ availability1$SW_mig <- factor(availability1$SW_mig, levels=c("N","S","NR","R"))
 
 
 mypal <- pal_npg("nrc", alpha = 1)(4)
-int.plot.ava <- availability1 %>%
+int.plot.ava <- availability %>%
   group_by(SW_mig, season) %>%
   dplyr::summarize(mean = mean(weighted_abd),
                    sd = sd(weighted_abd),
                    se = sd(weighted_abd)/sqrt(length(weighted_abd)))
-
-#int.plot1 <- int.plota %>% 
-#  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
 
 ava_plot_mig <- ggplot(int.plot.ava, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
   geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
@@ -758,7 +751,7 @@ ava_plot_mig <- ggplot(int.plot.ava, aes(x = season, y = mean, group = SW_mig, c
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean Availability") +
+  ylab("Mean MHA") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -796,7 +789,7 @@ library(ggsignif)
 
 hist(availability1$sqrt_exp)
 
-availability1 <- availability1 %>%
+availability1 <- availability %>%
   mutate(sqrt_ava = sqrt(weighted_abd),
          log_ava = log(weighted_abd+1))
 
@@ -811,7 +804,7 @@ anova(mig.exp.lmer)
 #boxplot suggests outliers
 #log transformation did little to help any assumptions
 bxp <- ggboxplot(
-  availability1, x = "season", y = "log_ava",
+  availability1, x = "season", y = "sqrt_ava",
   color = "SW_mig", palette = "jco"
 )
 bxp
@@ -824,9 +817,10 @@ outliers.mig <- availability1 %>%
 
 #normality
 #using qq since sample size relatively large
-ggqqplot(availability1, "sqrt_ava", ggtheme = theme_bw()) +
+norm <- ggqqplot(availability1, "sqrt_ava", ggtheme = theme_bw()) +
   facet_grid(season ~ SW_mig)
 #looks decent, sqrt best
+norm
 
 #homogeneity of variances
 availability1 %>%
@@ -834,15 +828,29 @@ availability1 %>%
   levene_test(log_ava ~ SW_mig)
 levene_test(availability1, log_ava~SW_mig*season)
 #good either way
-ggplot(availability1, aes(y=sqrt_ava, x=SW_mig))+
+var <- ggplot(availability1, aes(y=sqrt_ava, x=SW_mig))+
   geom_point() +
   facet_wrap(~season)
+var
 #not too bad
 #LMM fairly robust
 
 #homogeneity of covariances
 box_m(availability1[, "sqrt_ava", drop = FALSE], availability1$SW_mig)
 #bad, seems like relationship may be driven by outliers
+
+plotlist <- list(bxp,norm,var)
+
+mig_diagnostics <- ggarrange(plotlist=plotlist,
+                             common.legend = T,
+                             ncol=1,
+                             nrow=3,
+                             legend="none",
+                             align="hv")
+
+png("appendix_plots/mig_MHA_diagnostics_nobarren.png", height = 12, width = 8, units = "in",res=300)
+mig_diagnostics
+dev.off()
 
 ##post-hoc comparisons
 
@@ -864,11 +872,11 @@ AIC(mig.exp.lmer)
 # diet --------------------------------------------------------------------
 
 mypal <- pal_npg("nrc", alpha = 1)(5)
-int.plot.ava <- availability1 %>%
+int.plot.ava <- availability %>%
   group_by(diet2, season) %>%
-  dplyr::summarize(mean = mean(Exposure),
-                   sd = sd(Exposure),
-                   se = sd(Exposure)/sqrt(length(Exposure)))
+  dplyr::summarize(mean = mean(weighted_abd),
+                   sd = sd(weighted_abd),
+                   se = sd(weighted_abd)/sqrt(length(weighted_abd)))
 
 #int.plot1 <- int.plota %>% 
 #  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
@@ -880,7 +888,7 @@ ava_plot_diet <- ggplot(int.plot.ava, aes(x = season, y = mean, group = diet2, c
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean Exposure") +
+  ylab("Mean MHA") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -917,17 +925,18 @@ library(rstatix)
 library(ggsci)
 library(ggsignif)
 
-hist(availability1$sqrt_exp)
+hist(availability$sqrt_exp)
 
-availability1 <- availability1 %>%
-  mutate(sqrt_exp = sqrt(Exposure),
-         log_exp = log(Exposure+1))
+availability1 <- availability %>%
+  mutate(sqrt_ava = sqrt(weighted_abd),
+         log_ava = log(weighted_abd))
 
 #lme4
-diet.exp.lmer <- lmer(sqrt_exp ~ season*diet2 + (1 | species_code), data = availability1)
+diet.exp.lmer <- lmer(sqrt_ava ~ season*diet2 + (1 | species_code), data = availability1)
 summary(diet.exp.lmer)
 AIC(diet.exp.lmer)
 anova(diet.exp.lmer)
+rsquared(diet.exp.lmer)
 
 
 #assumptions
@@ -947,7 +956,7 @@ outliers.diet <- availability1 %>%
 
 #normality
 #using qq since sample size relatively large
-ggqqplot(availability1, "sqrt_exp", ggtheme = theme_bw()) +
+nrom <- ggqqplot(availability1, "sqrt_exp", ggtheme = theme_bw()) +
   facet_grid(season ~ diet2)
 #looks decent, sqrt best, omnivores still a bit off
 
@@ -957,7 +966,7 @@ availability1 %>%
   levene_test(sqrt_exp ~ diet2)
 levene_test(availability1, sqrt_exp~diet2*season)
 #better transformed, but still problematic 
-ggplot(availability1, aes(y=sqrt_exp, x=diet2))+
+var <- ggplot(availability1, aes(y=sqrt_exp, x=diet2))+
   geom_point() +
   facet_wrap(~season)
 #not too bad
@@ -966,6 +975,21 @@ ggplot(availability1, aes(y=sqrt_exp, x=diet2))+
 #homogeneity of covariances
 box_m(availability1[, "sqrt_exp", drop = FALSE], availability1$diet2)
 #bad
+
+plotlist <- list(bxp,norm,var)
+
+diet_diagnostics <- ggarrange(plotlist=plotlist,
+                             common.legend = T,
+                             ncol=1,
+                             nrow=3,
+                             legend="none",
+                             align="hv")
+
+png("appendix_plots/diet_MHA_diagnostics_nobarren.png", height = 12, width = 8, units = "in",res=300)
+diet_diagnostics
+dev.off()
+
+
 
 ##post-hoc comparisons
 
@@ -986,11 +1010,11 @@ AIC(diet.exp.lmer)
 
 
 mypal <- pal_npg("nrc", alpha = 1)(6)
-int.plot.ava <- availability1 %>%
+int.plot.ava <- availability %>%
   group_by(sw_foraging, season) %>%
-  dplyr::summarize(mean = mean(Exposure),
-                   sd = sd(Exposure),
-                   se = sd(Exposure)/sqrt(length(Exposure)))
+  dplyr::summarize(mean = mean(weighted_abd),
+                   sd = sd(weighted_abd),
+                   se = sd(weighted_abd)/sqrt(length(weighted_abd)))
 
 #int.plot1 <- int.plota %>% 
 #  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
@@ -1002,7 +1026,7 @@ ava_plot_for <- ggplot(int.plot.ava, aes(x = season, y = mean, group = sw_foragi
                 position=position_dodge(0.6)) +
   theme_classic(base_size = 22, base_family = "serif") +
   xlab("Season") +
-  ylab("Mean Exposure") +
+  ylab("Mean MHA") +
   # geom_hline(yintercept=1, linetype="dashed", 
   #            color = "black", size=1)+
   #labs(col = "Migratory Strategy") +
@@ -1046,15 +1070,16 @@ library(ggsignif)
 
 hist(availability1$sqrt_exp)
 
-availability1 <- availability1 %>%
-  mutate(sqrt_exp = sqrt(Exposure),
-         log_exp = log(Exposure+1))
+availability1 <- availability %>%
+  mutate(sqrt_ava = sqrt(weighted_abd),
+         log_ava = log(weighted_abd))
 
 #lme4
-for.exp.lmer <- lmer(sqrt_exp ~ season*sw_foraging + (1 | species_code), data = availability1)
+for.exp.lmer <- lmer(sqrt_ava ~ season*sw_foraging + (1 | species_code), data = availability1)
 summary(for.exp.lmer)
 AIC(for.exp.lmer)
 anova(for.exp.lmer)
+rsquared(for.exp.lmer)
 
 
 #assumptions
@@ -1074,7 +1099,7 @@ outliers.for <- availability1 %>%
 
 #normality
 #using qq since sample size relatively large
-ggqqplot(availability1, "sqrt_exp", ggtheme = theme_bw()) +
+norm <- ggqqplot(availability1, "sqrt_exp", ggtheme = theme_bw()) +
   facet_grid(season ~ sw_foraging)
 #looks decent, sqrt best, granivores still a bit off
 
@@ -1084,7 +1109,7 @@ availability1 %>%
   levene_test(sqrt_exp ~ sw_foraging)
 levene_test(availability1, sqrt_exp~sw_foraging*season)
 #better transformed, but still problematic 
-ggplot(availability1, aes(y=sqrt_exp, x=sw_foraging))+
+var <-ggplot(availability1, aes(y=sqrt_exp, x=sw_foraging))+
   geom_point() +
   facet_wrap(~season)
 #not too bad
@@ -1092,16 +1117,34 @@ ggplot(availability1, aes(y=sqrt_exp, x=sw_foraging))+
 
 #homogeneity of covariances
 box_m(availability1[, "sqrt_exp", drop = FALSE], availability1$sw_foraging)
-#bad
+#good
+
+plotlist <- list(bxp,norm,var)
+
+for_diagnostics <- ggarrange(plotlist=plotlist,
+                              common.legend = T,
+                              ncol=1,
+                              nrow=3,
+                              legend="none",
+                              align="hv")
+
+png("appendix_plots/for_MHA_diagnostics_nobarren.png", height = 12, width = 8, units = "in",res=300)
+for_diagnostics
+dev.off()
+
+
+
 
 ##post-hoc comparisons
 
 #no significant interaction
 
+for.exp.tukey.table <- emmeans(for.exp.lmer, list(pairwise ~ season), adjust = "holm")
 for.exp.tukey.table <- emmeans(for.exp.lmer, list(pairwise ~ sw_foraging), adjust = "holm")
 summary(for.exp.tukey.table)
-write.table(for.exp.tukey.table$`pairwise differences of sw_foraging`, file = "fig_outputs/exp-for-holm.txt", sep = ",", quote = FALSE, row.names = F)
-write.table(for.exp.tukey.table$`pairwise differences of sw_foraging`, file = "fig_outputs/exp-for-holm_noFCM.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(for.exp.tukey.table$`pairwise differences of season`, file = "fig_outputs/exp-for-holm.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(for.exp.tukey.table$`pairwise differences of season`, file = "fig_outputs/exp-for-holm_noFCM_season.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(for.exp.tukey.table$`pairwise differences of sw_foraging`, file = "fig_outputs/exp-for-holm_noFCM_foraging.txt", sep = ",", quote = FALSE, row.names = F)
 
 #marginal and conditional Rsq, AIC
 #install.packages("piecewiseSEM")
