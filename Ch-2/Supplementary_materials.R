@@ -562,7 +562,38 @@ lc_8k <- read.csv("ebird8k_df_out.csv")
 #some numbers are still weird - try it out anyways
 #need land cover class names
 
-1:5
+####plotting maps for appendix####
+writeRaster(bre_abd_mean, filename = "D:/Allison/Big_data/Ch-2 landcover/magwar_bre_abd.tif")
+bre_abd_mean <- raster("D:/Allison/Big_data/Ch-2 landcover/magwar_bre_abd.tif")
+
+x1 <- raster("D:/Allison/Big_data/Ch-2 landcover/base_map_lambert.tif")
+magwar_abd <- projectRaster(bre_abd_mean,x1)
+writeRaster(magwar_abd, filename = "D:/Allison/Big_data/Ch-2 landcover/magwar_bre_abd_lambert.tif")
+
+mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
+mod_lc <- projectRaster(mod_pland_ebd,x1)
+plot(mod_lc)
+
+lc_spdf <- as(mod_pland_ebd, "SpatialPixelsDataFrame")
+lc_df <- as.data.frame(lc_spdf)
+colnames(lc_df) <- c("value", "x", "y")
+
+#making nice raster plots in ggplot:https://stackoverflow.com/questions/33227182/how-to-set-use-ggplot2-to-map-a-raster
+ggplot() +  
+  geom_tile(data=lc_df, aes(x=x, y=y, fill=value), alpha=0.8) + 
+  scale_fill_viridis() +
+  coord_equal() +
+  theme_classic()
+
+
+#relative abundance
+plot(x1, legend=F, col = "black")
+plot(magwar_abd, legend = FALSE, add=T)
+
+#lc
+plot(x1, legend=F, col = "black")
+plot(mod_lc, legend = FALSE, add=T)
+
 
 
 
