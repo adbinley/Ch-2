@@ -43,8 +43,6 @@ breeding <- rpis_cover %>%
                    modrPI_var = var(modified, na.rm = TRUE),
                    natural_rPI = mean(forest, na.rm = TRUE),
                    natrPI_var = var(forest, na.rm = TRUE))#,
-#impacted1 = mean(impacted, na.rm = TRUE),
-#imp_var = var(impacted, na.rm = TRUE))
 
 load("data/species_basic.RData")
 
@@ -88,8 +86,6 @@ postbreeding <- rpis_cover %>%
                    modrPI_var = var(modified, na.rm = TRUE),
                    natural_rPI = mean(forest, na.rm = TRUE),
                    natrPI_var = var(forest, na.rm = TRUE))#,
-#impacted1 = mean(impacted, na.rm = TRUE),
-#imp_var = var(impacted, na.rm = TRUE))
 
 load("data/species_basic.RData")
 
@@ -102,7 +98,6 @@ load("data_outputs/rpis_nonbreeding_2019.RData")
 
 #now need to decide which landcover classes are "natural"
 #and which are "impacted"
-#colnames(rpis_id_nonbreeding)
 
 natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests PLAND",                
              "Deciduous Needleleaf Forests PLAND","Deciduous Broadleaf Forests PLAND",                
@@ -134,14 +129,10 @@ nonbreeding <- rpis_cover %>%
                    modrPI_var = var(modified, na.rm = TRUE),
                    natural_rPI = mean(forest, na.rm = TRUE),
                    natrPI_var = var(forest, na.rm = TRUE))#,
-#impacted1 = mean(impacted, na.rm = TRUE),
-#imp_var = var(impacted, na.rm = TRUE))
-
 
 load("data/species_basic.RData")
 
 nonbreeding_rpi_data <- inner_join(nonbreeding, species_basic, by = "species_code")
-#save(nonbreeding_rpi_data, file = "data_outputs/IHM_nonbreeding_rpi_data_2019.RData")
 save(nonbreeding_rpi_data, file = "data_outputs/nonbreeding_rpi_data_alt.RData")
 
 #### prebreeding ####
@@ -182,15 +173,11 @@ prebreeding <- rpis_cover %>%
                    modrPI_var = var(modified, na.rm = TRUE),
                    natural_rPI = mean(forest, na.rm = TRUE),
                    natrPI_var = var(forest, na.rm = TRUE))#,
-#impacted1 = mean(impacted, na.rm = TRUE),
-#imp_var = var(impacted, na.rm = TRUE))
 
 load("data/species_basic.RData")
 
 prebreeding_rpi_data <- inner_join(prebreeding, species_basic, by = "species_code")
-#save(prebreeding_rpi_data, file = "data_outputs/IHM_prebreeding_rpi_data_2019.RData")
 save(prebreeding_rpi_data, file = "data_outputs/prebreeding_rpi_data_alt.RData")
-
 
 #create migrants data
 load("data_outputs/breeding_rpi_data_alt.RData")
@@ -206,11 +193,9 @@ migrants_2019 <- rbind(breeding_rpi_data,postbreeding_rpi_data, nonbreeding_rpi_
 migrants_2019$season <- factor(migrants_2019$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
 save(migrants_2019, file = "data_outputs/rPI_migrants_alt.RData")
 
+#note that alternate no FCM analysis for MHA is in the 2-landcover script
 
 #### SHM ####
-
-#partial dependence
-#needs cleanup before pub, res and mig species still separated
 
 library(ebirdst)
 library(dplyr)
@@ -228,11 +213,6 @@ ebirdst_species <- ebirdst_runs %>%
 
 my_species <- read.csv("data/bird_data_v4.csv")
 my_species <- left_join(my_species, ebirdst_species, by = "species_code")
-
-#my_species <- my_species[1:3,]
-
-#my_species <- my_species %>%
-# filter(species_code == "amered")
 
 setwd("E:/eBird/data/raw/STEM")
 
@@ -308,7 +288,6 @@ for(i in 1:length(my_species$species_code)){
   
   for(j in 1:length(natural)){
     
-    #pd_smooth <- plot_pds(pds, natural[3], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, bre_extent) %>%
       filter(predictor == natural[j])
     
@@ -342,8 +321,7 @@ for(i in 1:length(my_species$species_code)){
   pds_imp <- list()
   
   for(k in 1:length(modified)){
-    
-    #pd_smooth <- plot_pds(pds, impacted[k], ext = bre_extent, show_stixel_pds = F, plot = F)
+
     data <- ebirdst_subset(pds, bre_extent) %>%
       filter(predictor == modified[k])
     
@@ -439,8 +417,7 @@ for(i in 1:length(my_species$species_code)){
   imp_mods <- list()
   
   for(j in 1:length(natural)){
-    
-    #pd_smooth <- plot_pds(pds, natural[3], ext = bre_extent, show_stixel_pds = F, plot = F)
+
     data <- ebirdst_subset(pds, postbre_extent) %>%
       filter(predictor == natural[j])
     
@@ -473,7 +450,6 @@ for(i in 1:length(my_species$species_code)){
   
   for(k in 1:length(modified)){
     
-    #pd_smooth <- plot_pds(pds, impacted[k], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, postbre_extent) %>%
       filter(predictor == modified[k])
     
@@ -573,7 +549,6 @@ for(i in 1:length(my_species$species_code)){
   
   for(j in 1:length(natural)){
     
-    #pd_smooth <- plot_pds(pds, natural[3], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, nonbre_extent) %>%
       filter(predictor == natural[j])
     
@@ -707,7 +682,6 @@ for(i in 1:length(my_species$species_code)){
   
   for(j in 1:length(natural)){
     
-    #pd_smooth <- plot_pds(pds, natural[3], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, prebre_extent) %>%
       filter(predictor == natural[j])
     
@@ -740,7 +714,6 @@ for(i in 1:length(my_species$species_code)){
   
   for(k in 1:length(modified)){
     
-    #pd_smooth <- plot_pds(pds, impacted[k], ext = bre_extent, show_stixel_pds = F, plot = F)
     data <- ebirdst_subset(pds, prebre_extent) %>%
       filter(predictor == modified[k])
     
@@ -807,11 +780,6 @@ setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
 
 my_species <- read.csv("data/bird_data_v4.csv")
 
-#my_species <- my_species[-c(6,206,229),]
-
-#my_species <- my_species %>%
-# filter(species_code == "amered")
-
 
 natural1 <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests",                
               "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests",                
@@ -830,18 +798,10 @@ modified1 <- c(#"Forest/Cropland Mosaics",
 
 #######################################
 
-#some species pd data broken (on ebird end?)
-#orcori, rebwoo, grhowl
-#fixed
-
-#drops <- c("orcori", "rebwoo", "grhowl")
-#my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
-
 load("data_outputs/breeding_pds1_noFCM.RData")
 breeding_pds1$season <- rep("breeding", length(my_species$species_code))
 load("data_outputs/breeding_nat_mods_noFCM.RData")
 
-#breeding_nat_mods <- breeding_nat_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -902,7 +862,6 @@ species_breeding_nat1 <- bind_rows(species_breeding_nat)
 #breeding modified
 
 load("data_outputs/breeding_mod_mods_noFCM.RData")
-#breeding_mod_mods <- breeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -970,17 +929,10 @@ save(species_breeding_bs, file = "data_outputs/species_breeding_bootstrap_noFCM.
 
 #######################################
 
-#some species pd data broken (on ebird end?)
-#orcori, rebwoo, grhowl
-
-#drops <- c("orcori", "rebwoo", "grhowl")
-#my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
-
 load("data_outputs/postbreeding_pds1_noFCM.RData")
 postbreeding_pds1$season <- rep("postbreeding", length(my_species$species_code))
 load("data_outputs/postbreeding_nat_mods_noFCM.RData")
 
-#postbreeding_nat_mods <- postbreeding_nat_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1041,7 +993,6 @@ species_postbreeding_nat1 <- bind_rows(species_postbreeding_nat)
 #postbreeding modified
 
 load("data_outputs/postbreeding_mod_mods_noFCM .RData")
-#postbreeding_mod_mods <- postbreeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1109,17 +1060,10 @@ save(species_postbreeding_bs, file = "data_outputs/species_postbreeding_bootstra
 
 #######################################
 
-#some species pd data broken (on ebird end?)
-#orcori, rebwoo, grhowl
-
-#drops <- c("orcori", "rebwoo", "grhowl")
-#my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
-
 load("data_outputs/nonbreeding_pds1_noFCM.RData")
 nonbreeding_pds1$season <- rep("nonbreeding", length(my_species$species_code))
 load("data_outputs/nonbreeding_nat_mods_noFCM.RData")
 
-#nonbreeding_nat_mods <- nonbreeding_nat_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1180,7 +1124,6 @@ species_nonbreeding_nat1 <- bind_rows(species_nonbreeding_nat)
 #nonbreeding modified
 
 load("data_outputs/nonbreeding_mod_mods_noFCM.RData")
-#nonbreeding_mod_mods <- nonbreeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1250,17 +1193,10 @@ save(species_nonbreeding_bs, file = "data_outputs/species_nonbreeding_bootstrap_
 
 #######################################
 
-#some species pd data broken (on ebird end?)
-#orcori, rebwoo, grhowl
-
-#drops <- c("orcori", "rebwoo", "grhowl")
-#my_species1 <-  my_species$species_code [! my_species$species_code %in% drops]
 
 load("data_outputs/prebreeding_pds1_noFCM.RData")
 prebreeding_pds1$season <- rep("prebreeding", length(my_species$species_code))
 load("data_outputs/prebreeding_nat_mods_noFCM.RData")
-
-#prebreeding_nat_mods <- prebreeding_nat_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1321,7 +1257,6 @@ species_prebreeding_nat1 <- bind_rows(species_prebreeding_nat)
 #prebreeding modified
 
 load("data_outputs/prebreeding_mod_mods_noFCM.RData")
-#prebreeding_mod_mods <- prebreeding_mod_mods[-c(6,206,229)]
 
 #for each model (12 for each species in each season)
 #1000 bootstrap replicates
@@ -1389,32 +1324,9 @@ save(species_prebreeding_bs, file = "data_outputs/species_prebreeding_bootstrap_
 #################################################################
 
 load("data_outputs/species_breeding_bootstrap_noFCM.RData")
-#load("data_outputs/species_nonbreeding_res_bootstrap.RData")
-#load("data/my_species_residents.RData")
-
-#resident_bootstrap_all <- bind_rows(species_breeding_bs, species_nonbreeding_res_bs) %>%
-#filter(species_code %in% my_species_residents$species_code)
-
-#save(resident_bootstrap_all, file = "data_outputs/resident_bootstrap_all.RData")
-
 load("data_outputs/species_postbreeding_bootstrap_noFCM.RData")
 load("data_outputs/species_nonbreeding_bootstrap_noFCM.RData")
 load("data_outputs/species_prebreeding_bootstrap_noFCM.RData")
-
-#load("data_outputs/migrants.RData")
-#migrant_species <- unique(migrants$species_code)
-#drops <- c("orcori", "rebwoo", "grhowl")
-#my_species_migrants <-  migrant_species [! migrant_species %in% drops]
-
-
-
-#migrants_bootstrap_all <- bind_rows(species_breeding_bs,
-#                                    species_postbreeding_bs,
-#                                    species_nonbreeding_bs,
-#                                    species_prebreeding_bs) %>%
-#  filter(species_code %in% migrant_species)
-
-#save(migrants_bootstrap_all, file = "data_outputs/migrants_bootstrap_all.RData")
 
 bootstrap_all <- bind_rows(species_breeding_bs,
                            species_postbreeding_bs,
@@ -1422,366 +1334,4 @@ bootstrap_all <- bind_rows(species_breeding_bs,
                            species_prebreeding_bs)
 
 save(bootstrap_all, file = "data_outputs/bootstrap_all_noFCM.RData")
-
-#############################################################################################################
-
-#### data vis ####
-
-#############################################################################################################
-
-#species_basic <- read_excel("data/bird_data_v5.xlsx")
-
-#species_basic <- species_basic %>%
-#  mutate(diet2 = sw_diet)
-#species_basic$diet2 <- gsub("N", "F", species_basic$diet2)
-
-#species_basic <- species_basic %>%
-#  select(c("species_code", "group", "SW_mig", "diet2", "sw_foraging"))
-
-#save(species_basic, file = "data/species_basic.RData")
-
-#listing species in each guild
-library(readxl)
-library(matrixStats)
-
-load("data/species_basic.RData")
-
-
-################## migratory strategy ####
-
-#load("data_outputs/migrants_bootstrap_all.RData")
-#load("data_outputs/resident_bootstrap_all.RData")
-load("data_outputs/bootstrap_all.RData")
-
-#bootstrap_all <- rbind(migrants_bootstrap_all,resident_bootstrap_all)
-
-#migrants_bootstrap_all$trajectory <- ifelse(pds_all2$pd_slope >=0, "P", "N")
-
-#migrants <- left_join(migrants_bootstrap_all, species_basic, by = "species_code")
-
-all_data <- left_join(bootstrap_all,species_basic,by="species_code")
-
-all_data1 <- all_data %>%
-  group_by(season, SW_mig, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(all_data1[,-c(1:3)], stdev =apply(all_data1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(all_data1[,-c(1:3)], mean =apply(all_data1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-migstrat <- all_data1 %>%
-  dplyr::select(1:3)
-migstrat$mean <- mean
-migstrat$stdev <- stdev
-
-#save(mig_migstrat, file = "data_outputs/mig_migstrat.RData")
-save(migstrat, file = "data_outputs/migstrat.RData")
-
-#plot
-migstrat$season <- factor(migstrat$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-pd <- position_dodge(0.1) # move them .05 to the left and right
-
-ggplot(aes(y = mean, x = season, col = state), data = migstrat) +
-  geom_point(position = pd)+
-  geom_errorbar(aes(ymin=mean-stdev, ymax=mean+stdev), width=.1, position=pd)+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(col = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~SW_mig)
-
-#boxplot
-all_data3 <- all_data1 %>%
-  pivot_longer(!c("season","SW_mig","state"), names_to = "No.", values_to = "PD" )
-
-all_data4 <- all_data3 %>%
-  pivot_wider(names_from = "state", values_from = "PD")
-
-all_data4 <- all_data4 %>%
-  mutate(ratio = natural/modified)
-
-#migrants3$season <- factor(migrants3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-all_data4$season <- factor(all_data4$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-
-ggplot(aes(y = PD, x = season, fill = state), data = all_data3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~SW_mig)
-
-ggplot(aes(y = ratio, x = season, fill = SW_mig), data = all_data4)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Ratio of proportion positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()
-
-################################## migrant diet ####
-
-load("data_outputs/migrants_bootstrap_all.RData")
-
-#migrants_bootstrap_all$trajectory <- ifelse(pds_all2$pd_slope >=0, "P", "N")
-
-migrants <- left_join(migrants_bootstrap_all, species_basic, by = "species_code")
-
-migrants1 <- migrants %>%
-  group_by(season, diet2, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(migrants1[,-c(1:3)], stdev =apply(migrants1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(migrants1[,-c(1:3)], mean =apply(migrants1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-mig_diet <- migrants1 %>%
-  dplyr::select(1:3)
-mig_diet$mean <- mean
-mig_diet$stdev <- stdev
-
-save(mig_diet, file = "data_outputs/mig_diet.RData")
-
-#plot
-mig_diet$season <- factor(mig_diet$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-pd <- position_dodge(0.1) # move them .05 to the left and right
-
-ggplot(aes(y = mean, x = season, col = state), data = mig_diet) +
-  geom_point(position = pd)+
-  geom_errorbar(aes(ymin=mean-stdev, ymax=mean+stdev), width=.1, position=pd)+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(col = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~diet2)
-
-#boxplot
-migrants3 <- migrants1 %>%
-  pivot_longer(!c("season","diet2","state"), names_to = "No.", values_to = "PD" )
-
-#migrants3$season <- factor(migrants3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-
-ggplot(aes(y = PD, x = season, fill = state), data = migrants3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~diet2)
-
-################################## migrant foraging ####
-
-load("data_outputs/migrants_bootstrap_all.RData")
-
-#migrants_bootstrap_all$trajectory <- ifelse(pds_all2$pd_slope >=0, "P", "N")
-
-migrants <- left_join(migrants_bootstrap_all, species_basic, by = "species_code")
-
-migrants1 <- migrants %>%
-  group_by(season, sw_foraging, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(migrants1[,-c(1:3)], stdev =apply(migrants1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(migrants1[,-c(1:3)], mean =apply(migrants1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-mig_foraging <- migrants1 %>%
-  dplyr::select(1:3)
-mig_foraging$mean <- mean
-mig_foraging$stdev <- stdev
-
-save(mig_foraging, file = "data_outputs/mig_foraging.RData")
-
-#plot
-mig_foraging$season <- factor(mig_foraging$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-pd <- position_dodge(0.1) # move them .05 to the left and right
-
-ggplot(aes(y = mean, x = season, col = state), data = mig_foraging) +
-  geom_point(position = pd)+
-  geom_errorbar(aes(ymin=mean-stdev, ymax=mean+stdev), width=.1, position=pd)+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(col = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~sw_foraging)
-
-#boxplot
-migrants3 <- migrants1 %>%
-  pivot_longer(!c("season","sw_foraging","state"), names_to = "No.", values_to = "PD" )
-
-#migrants3$season <- factor(migrants3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-
-ggplot(aes(y = PD, x = season, fill = state), data = migrants3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~sw_foraging)
-
-
-########## resident species ####
-
-load("data_outputs/resident_bootstrap_all.RData")
-load("data/species_basic.RData")
-
-
-residents <- left_join(resident_bootstrap_all, species_basic, by = "species_code")
-
-################################## residents diet ####
-
-residents1 <- residents %>%
-  group_by(season, diet2, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(residents1[,-c(1:3)], stdev =apply(residents1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(residents1[,-c(1:3)], mean =apply(residents1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-res_diet <- residents1 %>%
-  dplyr::select(1:3)
-res_diet$mean <- mean
-res_diet$stdev <- stdev
-
-save(res_diet, file = "data_outputs/res_diet.RData")
-
-#plot
-#res_diet$season <- factor(res_diet$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-pd <- position_dodge(0.1) # move them .05 to the left and right
-
-ggplot(aes(y = mean, x = season, col = state), data = res_diet) +
-  geom_point(position = pd)+
-  geom_errorbar(aes(ymin=mean-stdev, ymax=mean+stdev), width=.1, position=pd)+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(col = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~diet2)
-
-#boxplot
-residents3 <- residents1 %>%
-  pivot_longer(!c("season","diet2","state"), names_to = "No.", values_to = "PD" )
-
-ggplot(aes(y = PD, x = season, fill = state), data = residents3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~diet2)
-
-################################## residents foraging ####
-
-residents1 <- residents %>%
-  group_by(season, sw_foraging, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(residents1[,-c(1:3)], stdev =apply(residents1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(residents1[,-c(1:3)], mean =apply(residents1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-res_foraging <- residents1 %>%
-  dplyr::select(1:3)
-res_foraging$mean <- mean
-res_foraging$stdev <- stdev
-
-save(res_foraging, file = "data_outputs/res_foraging.RData")
-
-#plot
-#res_foraging$season <- factor(res_foraging$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-pd <- position_dodge(0.1) # move them .05 to the left and right
-
-ggplot(aes(y = mean, x = season, col = state), data = res_foraging) +
-  geom_point(position = pd)+
-  geom_errorbar(aes(ymin=mean-stdev, ymax=mean+stdev), width=.1, position=pd)+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(col = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~sw_foraging)
-
-#boxplot
-residents3 <- residents1 %>%
-  pivot_longer(!c("season","sw_foraging","state"), names_to = "No.", values_to = "PD" )
-
-ggplot(aes(y = PD, x = season, fill = state), data = residents3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~sw_foraging)
-
-
-#############################################################################################
-
-#### pd models ####
-
-#############################################################################################
-
-library(lme4)
-library(nlme)
-
-
-migrants_long <- migrants %>%
-  pivot_longer(!c("species_code","state","season","group","SW_mig","diet2","sw_foraging"), 
-               names_to = "No.", values_to = "PD" )
-
-migrants_long1 <- migrants_long %>%
-  group_by(season, species_code, state)%>%
-  summarise(mean_pd = mean(PD))
-
-migrants_long2 <- left_join(migrants_long1, species_basic, by = "species_code")
-migrants_long2 <- migrants_long2 %>%
-  pivot_wider(names_from = "state", values_from = "mean_pd") %>%
-  mutate(ratio = natural/modified)
-
-
-save(migrants_long2, file = "data/migrants_long2.RData")
-
-mig.stat.pd.lme <- lme(PD ~ season*SW_mig + state*season, data = migrants3, random = ~ 1 | No.)
-summary(mig.stat.pd.lme)
-anova(mig.stat.pd.lme)
-
-mig.stat.lmer <- lmer(SHM ~ season*SW_mig + (1 | species_code), data = migrants)
-summary(mig.stat.lmer)
-AIC(mig.stat.lmer)
-
-
 

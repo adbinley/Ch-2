@@ -1,6 +1,6 @@
 #supplementary materials
 
-#### Appendix A ####
+#### Appendix S1 ####
 
 load("data/species_basic.RData")
 
@@ -13,16 +13,502 @@ table(species_basic$sw_foraging,species_basic$SW_mig)
 # Table S3- contingency table of diet and foraging strategy
 table(species_basic$sw_foraging,species_basic$diet2)
 
-#### Appendix B ####
+#### Appendix S2 ####
 
-#load data
-
+data <- read.csv("data/bird_data_v4.csv")
+#cleaner table linked in supp, but same information contained here
 #all relevant scripts in repository
 
-#### Appendix C ####
+#### Appendix S3 ####
+
+library(ebirdst)
+library(sf)
+library(tidyverse)
+library(ggpubr)
+library(png)
+library(cowplot)
+library(magick)
+library(ggtext)
+
+setwd("E:/eBird/data/raw/STEM")
+path <- "magwar-ERD2019-STATUS-20200930-3ed92d66"
+
+load("D:/Allison/Github_Projects/Ch-2/Ch-2/data_outputs/rpis_breeding_2019.RData")
+magwar <- rpis_id_breeding %>%
+  filter(species_code=="magwar")
+
+stixels <- load_stixels(path)
+
+stixels1 <- stixels %>%
+  filter(stixel_id %in% magwar$stixel_id)
+
+set.seed(45)
+stixels_random <- sample_n(stixels1, 10, replace=F)
+
+stixels2 <- stixelize(stixels_random)
+plot(st_geometry(stixels2))
+
+# load gis data for making maps
+map_proj <- st_crs(4326)
+ne_land <- read_sf("data/gis-data.gpkg", "ne_land") %>% 
+  st_transform(crs = map_proj) #%>% 
+st_geometry()
+bcr <- read_sf("data/gis-data.gpkg", "bcr") %>% 
+  st_transform(crs = map_proj) %>% 
+  st_geometry()
+ne_country_lines <- read_sf("data/gis-data.gpkg", "ne_country_lines") %>% 
+  st_transform(crs = map_proj) #%>% 
+st_geometry()
+ne_state_lines <- read_sf("C:/Users/AllisonBinley/OneDrive - Carleton University/eBird r code/2. Subset eBird/BestPracdata/data/gis-data.gpkg", "ne_state_lines") %>% 
+  st_transform(crs = map_proj) #%>% 
+st_geometry()
+
+plot(st_geometry(stixels2), col = "#1F968BFF")
+plot(ne_land, add=T)
+plot(ne_country_lines, add=T)
+
+setwd("D:/Allison/Github_Projects/Ch-2/Ch-2")
+
+stixels3 <- stixels2[4,]
+
+plot(ne_country_lines)
+plot(ne_land, add=T)
+plot(st_geometry(stixels3), col = "yellow", border= 6, add=T)
 
 
-#### Appendix D ####
+map1 <- ggplot()+
+  geom_sf(data= ne_land)+
+  geom_sf(data= ne_country_lines)+
+  geom_sf(data=stixels2, fill="#1F968BFF", alpha = 0.5)+
+  geom_sf(data = stixels3, col = "orange", fill = "yellow")+
+  coord_sf(xlim=c(-150,-25))+
+  theme_classic()
+
+map1
+
+map2 <- ggdraw(map1) + 
+  draw_image("appendix_plots/mawa3.png", x = 0.95, y = 0.1, hjust = 1, vjust = 0, width = 0.25, height = 0.25)
+
+png("fig_outputs/map.png", height = 9, width = 11.5, units = "in",res=300)
+map2
+dev.off()
+
+
+stacked <- rpis_id_breeding%>%
+  filter(stixel_id == "70-168-NSSWEWWN",#"63-199.6-NSSWNEEN",#"48-177-NSSNSW",
+         species_code=="magwar")%>% #this is the specific stixel pictured on the map
+  select(c(6:28))
+
+stacked_long <- pivot_longer(stacked, 1:23, names_to="lc_class", values_to = "PI")
+stacked_long$x <- rep("x", length(stacked_long$lc_class))
+stacked_long1 <- filter(stacked_long)%>%
+  filter(PI > 0)
+
+stacked_long$lc_class <- factor(stacked_long$lc_class, levels=c("Evergreen Needleleaf Forests PLAND",
+                                                                "Deciduous Needleleaf Forests PLAND",
+                                                                "Deciduous Broadleaf Forests PLAND",
+                                                                "Mixed Broadleaf/Needleleaf Forests PLAND",
+                                                                "Open Forests PLAND",
+                                                                "Woody Wetlands PLAND", #natural forest
+                                                                "Forest/Cropland Mosaics PLAND",
+                                                                "Herbaceous Croplands PLAND", #modified
+                                                                "Sparse Forests PLAND",
+                                                                "Dense Herbaceous PLAND",
+                                                                "Herbaceous Wetlands PLAND"#other
+))
+
+
+
+clrs <- c("#062891","#0541C2","#1097F7","#051F72","#04528A","#6c8EF8","#FEE227","#FDA50F","#616161","#C1C1C1","9A9A9A") #"#FDC12A",
+
+stacked_long1$lc_class <- factor(stacked_long1$lc_class, levels=c("Evergreen Needleleaf Forests PLAND",
+                                                                  "Deciduous Needleleaf Forests PLAND",
+                                                                  "Deciduous Broadleaf Forests PLAND",
+                                                                  "Mixed Broadleaf/Needleleaf Forests PLAND",
+                                                                  "Open Forests PLAND",
+                                                                  "Woody Wetlands PLAND", #natural forest
+                                                                  "Forest/Cropland Mosaics PLAND",
+                                                                  "Herbaceous Croplands PLAND", #modified
+                                                                  "Sparse Forests PLAND",
+                                                                  "Dense Herbaceous PLAND",
+                                                                  "Herbaceous Wetlands PLAND"#other
+))
+
+
+PI <- ggplot(stacked_long1, aes(x=x, y=PI, fill = lc_class))+
+  geom_bar(position="fill", stat="identity")+
+  scale_fill_manual(name = "Land Cover Class",values= clrs,
+                    labels = c("Evergreen Needleleaf Forests",
+                               "Deciduous Needleleaf Forests",
+                               "Deciduous Broadleaf Forests",
+                               "Mixed Broadleaf/Needleleaf Forests",
+                               "Open Forests",
+                               "Woody Wetlands", #natural forest
+                               "Forest/Cropland Mosaics",
+                               "Herbaceous Croplands", #modified
+                               "Sparse Forests",
+                               "Dense Herbaceous",
+                               "Herbaceous Wetlands"#other
+                    ))+
+  theme_classic(base_family = "serif", base_size = 18)+
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "left")+
+  xlab("")+
+  ylab("Predictor Importance")
+
+png("fig_outputs/PI.png", height = 9, width = 11.5, units = "in",res=300)
+PI
+dev.off()
+
+natural <- c("Evergreen Needleleaf Forests PLAND","Evergreen Broadleaf Forests PLAND",                
+             "Deciduous Needleleaf Forests PLAND","Deciduous Broadleaf Forests PLAND",                
+             "Mixed Broadleaf/Needleleaf Forests PLAND",
+             "Mixed Broadleaf Evergreen/Deciduous Forests PLAND",
+             "Open Forests PLAND", "Woody Wetlands PLAND") 
+
+
+impacted <- c("Forest/Cropland Mosaics PLAND",                    
+              "Natural Herbaceous/Croplands Mosaics PLAND",       
+              "Herbaceous Croplands PLAND", 
+              "Barren PLAND" )
+
+
+stacked_long2 <- stacked_long1 %>%
+  filter(lc_class %in% natural | lc_class %in% impacted)%>%
+  mutate(PI2 = PI/sum(PI),
+         state=ifelse(lc_class %in% natural, "natural","modified"))
+
+stacked_long3 <- stacked_long2 %>%
+  group_by(state)%>%
+  summarise(rPI = sum(PI2))
+
+stacked_long3$x <- rep("x",length(stacked_long3$state))
+
+clrs2 <- c("#062891","#FEE227")
+stacked_long3$state <- factor(stacked_long3$state, levels=c("natural","modified"))
+
+rPI <- ggplot(stacked_long3, aes(x=x, y=rPI, fill = state))+
+  geom_bar(position="fill", stat="identity")+
+  scale_fill_manual(name = "Land Cover Class",values= clrs2,
+                    labels = c("Natural", "Modified"
+                    ))+
+  theme_classic(base_family = "serif", base_size = 18)+
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())+
+  xlab("")+
+  ylab("Relative Predictor Importance")+
+  scale_y_continuous(position = "right")
+
+png("fig_outputs/rPI.png", height = 9, width = 11.5, units = "in",res=300)
+rPI
+dev.off()
+
+plot_list <- list(PI,rPI)
+
+pi_plots <- ggarrange(plotlist = plot_list,
+                      ncol=2,
+                      widths = c(1,1))
+
+png("fig_outputs/pi_plots.png", height = 9, width = 11.5, units = "in",res=300)
+pi_plots
+dev.off()
+
+#pds
+
+#get and plot pds for magwar only
+
+ebirdst_species <- ebirdst_runs %>%
+  filter(species_code == "magwar")
+
+start <- ebirdst_species %>%
+{.[["breeding_start"]]}
+
+end <- ebirdst_species %>%
+{.[["breeding_end"]]}
+
+bre <- c(start, end)  
+
+ext <-  c(xmin = -180, xmax = 180, 
+          ymin = -90, ymax = 90)
+
+bre_extent <- ebirdst_extent(ext, t = bre)
+
+run_name <- ebirdst_species$run_name
+
+path <- "E:/eBird/data/raw/STEM/magwar-ERD2019-STATUS-20200930-3ed92d66"
+
+pds <- load_pds(path = path)
+
+natural <- c("mcd12q1_lccs1_fs_c11_1500_pland",
+             "mcd12q1_lccs1_fs_c12_1500_pland",
+             "mcd12q1_lccs1_fs_c13_1500_pland",
+             "mcd12q1_lccs1_fs_c14_1500_pland",
+             "mcd12q1_lccs1_fs_c15_1500_pland",
+             "mcd12q1_lccs1_fs_c16_1500_pland",
+             "mcd12q1_lccs1_fs_c21_1500_pland",
+             "mcd12q1_lccs3_fs_c27_1500_pland")
+
+modified <- c("mcd12q1_lccs2_fs_c25_1500_pland",
+              "mcd12q1_lccs2_fs_c35_1500_pland",
+              "mcd12q1_lccs2_fs_c36_1500_pland",
+              "mcd12q1_lccs1_fs_c1_1500_pland")
+
+
+natural1 <- c("Evergreen Needleleaf Forests","Evergreen Broadleaf Forests",                
+              "Deciduous Needleleaf Forests","Deciduous Broadleaf Forests",                
+              "Mixed Broadleaf/Needleleaf Forests",
+              "Mixed Broadleaf Evergreen/Deciduous Forests",
+              "Open Forests", "Woody Wetlands") 
+
+modified1 <- c("Forest/Cropland Mosaics",                    
+               "Natural Herbaceous/Croplands Mosaics",       
+               "Herbaceous Croplands" )
+
+lc_classes <- c(natural,modified)
+lc_classes1 <- c(natural1,modified1)
+
+pds1 <- pds %>%
+  filter(predictor %in% lc_classes) %>% #filtered to only our natural and modified land cover class predictors
+  filter(stixel_id == "70-168-NSSWEWWN") #filtered to highlighted stixel
+
+pds2 <- pds %>%
+  filter(predictor %in% lc_classes)
+
+
+# pd plots 
+#yes I should have looped it or made a function 
+
+library(ggtext)
+
+pd_plot1 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[1])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Evergreen Needleleaf Forest")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+
+pd_plot2 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[2])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Evergreen Broadleaf Forests")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+#pd_plot2
+
+pd_plot3 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[3])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Deciduous Needleleaf Forests")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+#pd_plot3
+
+pd_plot4 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[4])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Deciduous Broadleaf Forests")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+#pd_plot4
+
+pd_plot5 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[5])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Mixed Broadleaf/Needleleaf Forests")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+#pd_plot5
+
+pd_plot6 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[6])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Mixed Broadleaf Evergreen/Deciduous Forests")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+#pd_plot6
+
+pd_plot7 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[7])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Open Forests")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+#pd_plot7
+
+pd_plot8 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[8])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Woody Wetlands")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+#pd_plot8
+
+pd_plot9 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[9])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, col = "#FDC12A", se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Forest/Cropland Mosaics")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+#pd_plot9
+
+pd_plot10 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[10])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, col = "#FDC12A", se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Natural Herbaceous/Croplands Mosaics")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+#pd_plot10
+
+pd_plot11 <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor == lc_classes[11])%>%
+  ggplot(aes(predictor_value,response))+
+  #geom_point(alpha=0.2)+
+  geom_smooth(method = "lm", size = 2, col = "#FDC12A", se=F)+
+  #geom_smooth(method = "gam", se=F, size=1, col="black", linetype="dashed")+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Herbaceous Croplands")+
+  xlim(0,100)+
+  ylim(0,0.4)+
+  theme(plot.title = element_textbox_simple())
+#pd_plot11
+
+pd_plot_list <- list(pd_plot1,pd_plot2,pd_plot3,pd_plot4,
+                     pd_plot5,pd_plot6,pd_plot7,pd_plot8,
+                     pd_plot9,pd_plot10,pd_plot11)
+
+
+pd_plots <- ggarrange(plotlist = pd_plot_list,
+                      ncol=4,
+                      nrow = 3)
+
+theme(text = element_text())$text[ c("serif") ]
+
+pd_plots <- annotate_figure(pd_plots,
+                            left = "Logit Probability Occurrence",
+                            bottom = "Proportion Cover")
+
+
+png("fig_outputs/pd_plots2.png", height = 12, width = 12, units = "in",res=300)
+pd_plots
+dev.off()
+
+#combined
+
+pd_plot_nat <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor %in% lc_classes[1:8])%>%
+  ggplot(aes(predictor_value,response))+
+  geom_smooth(aes(group = predictor),method = "lm", size = 2, se=F)+
+  geom_smooth(method = "lm", size = 2, col= "black", linetype="dashed", se=F)+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ #Predictor Level
+  ylab("")+#Probability Occurrence
+  ggtitle("Natural")+
+  xlim(0,100)+
+  ylim(0,0.4)#+
+#theme(plot.title = element_textbox_simple())
+pd_plot_nat
+
+#
+
+pd_plot_mod <- ebirdst_subset(pds2, bre_extent) %>%
+  filter(predictor %in% lc_classes[9:11])%>%
+  ggplot(aes(predictor_value,response))+
+  geom_smooth(aes(group = predictor),method = "lm", size = 2, col = "#FDC12A", se=F)+
+  geom_smooth(method = "lm", size = 2, col= "black", linetype="dashed", se=F)+
+  theme_classic(base_size = 12, base_family = "serif")+
+  xlab("")+ 
+  ylab("")+
+  ggtitle("Modified")+
+  xlim(0,100)+
+  ylim(0,0.4)
+pd_plot_mod
+
+plot_list_2 <- list(pd_plot_nat,pd_plot_mod)
+
+pd_plots2 <- ggarrange(plotlist = plot_list_2,
+                       ncol=2,
+                       nrow = 1)
+
+png("fig_outputs/pd_plots3.png", height = 6, width = 11, units = "in",res=300)
+pd_plots2
+dev.off()
+
+#### Appendix S4 ####
 
 #pairwise comparisons
 
@@ -73,530 +559,10 @@ for.holm.pd.table <- emmeans(pd_aov, list(pairwise ~ sw_foraging*season), adjust
 summary(for.holm.pd.table)
 write.table(for.holm.pd.table$`pairwise differences of sw_foraging, season`, file = "fig_outputs/for-holm-pd.txt", sep = ",", quote = FALSE, row.names = F)
 
+#for model diagnostics, see 3-Results script
 
-#### Appendix E ####
+#### Appendix S5 ####
 
-#AIC and R squared
-
-
-#### Appendix F ####
-
-# IHM and SHM ratios separated into natural and impacted #
-
-load("data_outputs/IHM_migrants_2019.RData")
-
-#Figure 1a separated
-
-IHM_sep <- migrants_2019 %>%
-  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
-
-names <- c(
-  'N'="Neotropical Migrant",
-  'NR'="Neotropical Resident",
-  'R'="North American Resident",
-  'S'="Short-distance Migrant"
-)
-
-figS10 <- ggplot(aes(y = rPI, x = season, fill = state), data = IHM_sep)+
-  geom_boxplot()+
-  theme_classic(base_size = 22, base_family = "serif") +
-  xlab("Season") +
-  ylab("Relative Predictor Importance") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg(labels = c("Modified","Natural"))+
-  facet_wrap(.~SW_mig, labeller = as_labeller(names))
-
-png("appendix_plots/figureS10.png", height = 8, width = 11.5, units = "in",res=300)
-figS10
-dev.off()
-
-
-#Figure 1b separated
-
-load("data/species_basic.RData")
-load("data_outputs/bootstrap_all.RData")
-
-all_data <- left_join(bootstrap_all,species_basic,by="species_code")
-
-all_data1 <- all_data %>%
-  group_by(season, SW_mig, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-all_data3 <- all_data1 %>%
-  pivot_longer(!c("season","SW_mig","state"), names_to = "No.", values_to = "PP" )
-
-all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-figS11 <- ggplot(aes(y = PP, x = season, fill = state), data = all_data3)+
-  geom_boxplot()+
-  theme_classic(base_size = 22, base_family = "serif") +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg(labels = c("Modified","Natural"))+
-  facet_wrap(.~SW_mig, labeller = as_labeller(names))
-
-png("appendix_plots/figureS11.png", height = 8, width = 11.5, units = "in",res=300)
-figS11
-dev.off()
-
-#Figure 2a separated
-
-IHM_sep <- migrants_2019 %>%
-  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
-
-names <- c(
-  'C'="Carnivore",
-  'F'="Frugivore",
-  'G'="Granivore",
-  'I'="Insectivore",
-  'O'="Omnivore"
-)
-
-figS12 <- ggplot(aes(y = rPI, x = season, fill = state), data = IHM_sep)+
-  geom_boxplot()+
-  theme_classic(base_size = 22, base_family = "serif") +
-  xlab("Season") +
-  ylab("Relative Predictor Importance") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg(labels = c("Modified","Natural"))+
-  facet_wrap(.~diet2, labeller = as_labeller(names))
-
-png("appendix_plots/figureS12.png", height = 8, width = 11.5, units = "in",res=300)
-figS12
-dev.off()
-
-#Figure 2b separated
-
-load("data/species_basic.RData")
-load("data_outputs/bootstrap_all.RData")
-
-all_data <- left_join(bootstrap_all,species_basic,by="species_code")
-
-all_data1 <- all_data %>%
-  group_by(season, diet2, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-all_data3 <- all_data1 %>%
-  pivot_longer(!c("season","diet2","state"), names_to = "No.", values_to = "PP" )
-
-all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-figS13 <- ggplot(aes(y = PP, x = season, fill = state), data = all_data3)+
-  geom_boxplot()+
-  theme_classic(base_size = 22, base_family = "serif") +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg(labels = c("Modified","Natural"))+
-  facet_wrap(.~diet2, labeller = as_labeller(names))
-
-png("appendix_plots/figureS13.png", height = 8, width = 11.5, units = "in",res=300)
-figS13
-dev.off()
-
-#Figure 3a separated
-
-IHM_sep <- migrants_2019 %>%
-  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
-
-names <- c(
-  'F'="Foliage Gleaner",
-  'B'="Bark Forager",
-  'G'="Ground Forager",
-  'AF'="Aerial Forager",
-  'GH'="Ground Hawker",
-  'AH'="Aerial Hawker"
-)
-
-figS14 <- ggplot(aes(y = rPI, x = season, fill = state), data = IHM_sep)+
-  geom_boxplot()+
-  theme_classic(base_size = 22, base_family = "serif") +
-  xlab("Season") +
-  ylab("Relative Predictor Importance") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg(labels = c("Modified","Natural"))+
-  facet_wrap(.~sw_foraging, labeller = as_labeller(names))
-
-png("appendix_plots/figureS14.png", height = 8, width = 11.5, units = "in",res=300)
-figS14
-dev.off()
-
-#Figure 3b separated
-
-load("data/species_basic.RData")
-load("data_outputs/bootstrap_all.RData")
-
-all_data <- left_join(bootstrap_all,species_basic,by="species_code")
-
-all_data1 <- all_data %>%
-  group_by(season, sw_foraging, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-all_data3 <- all_data1 %>%
-  pivot_longer(!c("season","sw_foraging","state"), names_to = "No.", values_to = "PP" )
-
-all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-figS15 <- ggplot(aes(y = PP, x = season, fill = state), data = all_data3)+
-  geom_boxplot()+
-  theme_classic(base_size = 22, base_family = "serif") +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg(labels = c("Modified","Natural"))+
-  facet_wrap(.~sw_foraging, labeller = as_labeller(names))
-
-png("appendix_plots/figureS15.png", height = 8, width = 11.5, units = "in",res=300)
-figS15
-dev.off()
-
-
-
-
-
-
-#### maybe garbage below, delete b4 pub ####
-
-
-
-#### Figure 1 ####
-load("data_outputs/migrants_2019.RData")
-
-x <- migrants_2019 %>%
-  filter(season == "breeding") 
-table(x$SW_mig, x$diet2)
-table(x$SW_mig, x$sw_foraging)
-table(x$diet2, x$sw_foraging)
-
-#alternative visualization for figure 1a:
-
-int.plota <- migrants_2019 %>%
-  group_by(SW_mig, season) %>%
-  dplyr::summarize(mean = mean(SHM),
-                   sd = sd(SHM),
-                   se = sd(SHM)/sqrt(length(SHM)))
-
-int.plot1 <- int.plota %>% 
-  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
-
-ggplot(int.plota, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
-  geom_line(position=position_dodge(0.25)) +
-  geom_point(position=position_dodge(0.25)) +
-  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.2,
-                position=position_dodge(0.25)) +
-  theme_classic() +
-  xlab("Season") +
-  ylab("Mean SHM") +
-  labs(col = "Migratory Strategy") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()
-
-#1b alternate
-int.plotb <-all_data4 %>%
-  group_by(SW_mig, season) %>%
-  dplyr::summarize(mean = mean(ratio),
-                   sd = sd(ratio),
-                   se = sd(ratio)/sqrt(length(ratio)))
-
-#int.plot2 <- int.plotb %>% 
-#  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
-
-ggplot(int.plotb, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
-  geom_line(position=position_dodge(0.25)) +
-  geom_point(position=position_dodge(0.25)) +
-  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.2,
-                position=position_dodge(0.25)) +
-  theme_classic() +
-  xlab("Season") +
-  ylab("Mean SHM") +
-  geom_hline(yintercept=1, linetype="dashed", 
-             color = "orange", size=1)+
-  labs(col = "Migratory Strategy") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()
-
-# Figure 1 ratios separated into natural and impacted #
-#discussion?
-
-#rPIs
-
-SHM_sep <- migrants_2019 %>%
-  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
-
-ggplot(aes(y = rPI, x = season, fill = state), data = SHM_sep)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("rPI") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~SW_mig)
-
-
-#PDs
-
-load("data/species_basic.RData")
-load("data_outputs/bootstrap_all.RData")
-
-all_data <- left_join(bootstrap_all,species_basic,by="species_code")
-
-all_data1 <- all_data %>%
-  group_by(season, SW_mig, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(all_data1[,-c(1:3)], stdev =apply(all_data1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(all_data1[,-c(1:3)], mean =apply(all_data1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-#boxplot
-all_data3 <- all_data1 %>%
-  pivot_longer(!c("season","SW_mig","state"), names_to = "No.", values_to = "PD" )
-
-all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-ggplot(aes(y = PD, x = season, fill = state), data = all_data3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("Proportion Positive") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~SW_mig)
-
-#### Figure 2 ####
-
-#alternate
-
-mig.diet.plot <- migrants_2019 %>%
-  group_by(diet2, season) %>%
-  dplyr::summarize(mean = mean(SHM),
-                   sd = sd(SHM),
-                   se = sd(SHM)/sqrt(length(SHM)))
-
-ggplot(mig.diet.plot, aes(x = season, y = mean, group = diet2, col = diet2)) +
-  geom_line(position=position_dodge(0.25)) +
-  geom_point(position=position_dodge(0.25)) +
-  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.2,
-                position=position_dodge(0.25)) +
-  theme_classic() +
-  xlab("Season") +
-  ylab("Mean SHM") +
-  labs(col = "Diet") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
-facet_wrap(~diet2)
-
-#2b alternate
-int.plotb <-all_data4 %>%
-  group_by(diet2, season) %>%
-  dplyr::summarize(mean = mean(ratio),
-                   sd = sd(ratio),
-                   se = sd(ratio)/sqrt(length(ratio)))
-
-#int.plot2 <- int.plotb %>% 
-#  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
-
-ggplot(int.plotb, aes(x = season, y = mean, group = diet2, col = diet2)) +
-  geom_line(position=position_dodge(0.25)) +
-  geom_point(position=position_dodge(0.25)) +
-  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.2,
-                position=position_dodge(0.25)) +
-  theme_classic() +
-  xlab("Season") +
-  ylab("Mean IHM") +
-  geom_hline(yintercept=1, linetype="dashed", 
-             color = "orange", size=1)+
-  labs(col = "Diet") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()
-
-
-
-#  separated
-
-SHM_sep <- migrants_2019 %>%
-  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
-
-ggplot(aes(y = rPI, x = season, fill = state), data = SHM_sep)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("rPI") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~diet2)
-
-
-#### Figure 3 ####
-
-
-#alternative visualization for figure 3a:
-mig.for.plot <- migrants_2019 %>%
-  group_by(sw_foraging, season) %>%
-  dplyr::summarize(mean = mean(SHM),
-                   sd = sd(SHM),
-                   se = sd(SHM)/sqrt(length(SHM)))
-
-ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
-  geom_line(position=position_dodge(0.25)) +
-  geom_point(position=position_dodge(0.25)) +
-  geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=.2,
-                position=position_dodge(0.25)) +
-  theme_classic() +
-  xlab("Season") +
-  ylab("Mean IHM") +
-  labs(col = "Foraging Strategy") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
-  facet_wrap(~sw_foraging)
-
-
-#3b alternate
-int.plotb <-all_data4 %>%
-  group_by(sw_foraging, season) %>%
-  dplyr::summarize(mean = mean(ratio),
-                   sd = sd(ratio),
-                   se = sd(ratio)/sqrt(length(ratio)))
-
-#int.plot2 <- int.plotb %>% 
-#  mutate(group1 = ifelse(SW_mig == "N" | SW_mig == "S", "migratory", "resident"))
-
-ggplot(int.plotb, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
-  geom_line(position=position_dodge(0.25)) +
-  geom_point(position=position_dodge(0.25)) +
-  geom_errorbar(aes(ymin=mean-(2*se), ymax=mean+(2*se)), width=.2,
-                position=position_dodge(0.25)) +
-  theme_classic() +
-  xlab("Season") +
-  ylab("Mean SHM") +
-  geom_hline(yintercept=1, linetype="dashed", 
-             color = "orange", size=1)+
-  labs(col = "Foraging Strategy") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()#+
-  #facet_wrap(~sw_foraging)
-
-# Figure 3 ratios separated into natural and impacted #
-#discussion?
-
-#rPIs
-
-SHM_sep <- migrants_2019 %>%
-  pivot_longer(cols = c("natural1","impacted1"), names_to = "state", values_to = "rPI")
-
-ggplot(aes(y = rPI, x = season, fill = state), data = SHM_sep)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("rPI") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~sw_foraging)
-
-
-#PDs
-
-load("data/species_basic.RData")
-load("data_outputs/bootstrap_all.RData")
-
-all_data <- left_join(bootstrap_all,species_basic,by="species_code")
-
-all_data1 <- all_data %>%
-  group_by(season, sw_foraging, state) %>%
-  summarise(across(where(is.numeric), ~sum(.>0)/length(.)))
-
-SD <- transform(all_data1[,-c(1:3)], stdev =apply(all_data1[,-c(1:3)], 1, sd, na.rm = TRUE))
-stdev <- SD$stdev
-M <- transform(all_data1[,-c(1:3)], mean =apply(all_data1[,-c(1:3)], 1, mean, na.rm = TRUE))
-mean <- M$mean
-
-#boxplot
-all_data3 <- all_data1 %>%
-  pivot_longer(!c("season","sw_foraging","state"), names_to = "No.", values_to = "PD" )
-
-all_data3$season <- factor(all_data3$season, levels=c("breeding", "postbreeding","nonbreeding", "prebreeding"))
-
-ggplot(aes(y = PD, x = season, fill = state), data = all_data3)+
-  geom_boxplot()+
-  theme_classic() +
-  xlab("Season") +
-  ylab("SHM") +
-  labs(fill = "State") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  scale_fill_npg()+
-  facet_wrap(~sw_foraging)
-
-#### LandCover Map ####
-
-#land cover data
-
-library(raster)
-library(ncdf4)
-library(rgdal)
-
-
-landcover <- raster("data/LandCover.tif")
-unique(landcover)
-temp <- raster("data/srd_raster_template.tif")
-#plot(landcover)
-#landcover_stack <- stack("data files/LandCover.tif")
-
-#landcover
-#landcover$values
-
-#Nov 5 2020
-
-lc_3k <- read.csv("ebird3k_df_out.csv")
-lc_8k <- read.csv("ebird8k_df_out.csv")
-
-#some numbers are still weird - try it out anyways
-#need land cover class names
-
-####plotting maps for appendix####
-writeRaster(bre_abd_mean, filename = "D:/Allison/Big_data/Ch-2 landcover/magwar_bre_abd.tif")
-bre_abd_mean <- raster("D:/Allison/Big_data/Ch-2 landcover/magwar_bre_abd.tif")
-
-x1 <- raster("D:/Allison/Big_data/Ch-2 landcover/base_map_lambert.tif")
-magwar_abd <- projectRaster(bre_abd_mean,x1)
-writeRaster(magwar_abd, filename = "D:/Allison/Big_data/Ch-2 landcover/magwar_bre_abd_lambert.tif")
-
-mod_pland_ebd <- raster("D:/Allison/Big_data/Ch-2 landcover/modified_cover_ebd_nobarren.tif")
-mod_lc <- projectRaster(mod_pland_ebd,x1)
-plot(mod_lc)
-
-lc_spdf <- as(mod_pland_ebd, "SpatialPixelsDataFrame")
-lc_df <- as.data.frame(lc_spdf)
-colnames(lc_df) <- c("value", "x", "y")
-
-#making nice raster plots in ggplot:https://stackoverflow.com/questions/33227182/how-to-set-use-ggplot2-to-map-a-raster
-ggplot() +  
-  geom_tile(data=lc_df, aes(x=x, y=y, fill=value), alpha=0.8) + 
-  scale_fill_viridis() +
-  coord_equal() +
-  theme_classic()
-
-
-#relative abundance
-plot(x1, legend=F, col = "black")
-plot(magwar_abd, legend = FALSE, add=T)
-
-#lc
-plot(x1, legend=F, col = "black")
-plot(mod_lc, legend = FALSE, add=T)
-
-
-
-
-
+#see 2-alternate analyses script (rPIm and SHM) or 2-land cover script (MHA)
 
 
