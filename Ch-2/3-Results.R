@@ -104,11 +104,11 @@ int.plota <- migrants_2019 %>%
 
 
 fig2a <- ggplot(int.plota, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
-geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
+#geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
-theme_classic(base_size = 22, base_family = "serif") +
+theme_classic(base_size = 22, base_family = "sans") +
   xlab("Season") +
   ylab("Mean rPI") +
   theme(axis.text.x = element_text(angle = 45, hjust=1))+
@@ -202,11 +202,11 @@ int.plot.b <- availability %>%
                    se = sd(weighted_abd)/sqrt(length(weighted_abd)))
 
 fig2b <- ggplot(int.plot.b, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
-  geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
+  #geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
-  theme_classic(base_size = 22, base_family = "serif") +
+  theme_classic(base_size = 22, base_family = "sans") +
   xlab("Season") +
   ylab("Mean MHA") +
   theme(axis.text.x = element_text(angle = 45, hjust=1))+
@@ -280,11 +280,11 @@ int.plotc <- all_data4_mig %>%
                    se = sd(SHM)/sqrt(length(SHM)))
 
 fig2c <- ggplot(int.plotc, aes(x = season, y = mean, group = SW_mig, col = SW_mig)) +
-  geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
+  #geom_line(aes(group=SW_mig),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
-  theme_classic(base_size = 22, base_family = "serif") +
+  theme_classic(base_size = 22, base_family = "sans") +
   xlab("Season") +
   ylab("Mean SHM") +
   theme(axis.text.x = element_text(angle = 45, hjust=1))+
@@ -299,14 +299,22 @@ fig2c <- ggplot(int.plotc, aes(x = season, y = mean, group = SW_mig, col = SW_mi
 fig2a
 fig2b
 fig2c
-plotlist1 <- list(fig2a,fig2b,fig2c)
+leg <- get_legend(fig2a)
+#plotlist1 <- list(fig2a,fig2b,fig2c,leg)
+fig2a <- fig2a + theme(legend.position = "none")
+fig2b <- fig2b + theme(legend.position = "none")
+fig2c <- fig2c + theme(legend.position = "none")
 
-figure2 <- ggarrange(plotlist=plotlist1,
-                     common.legend = T,
+figure2 <- ggarrange(fig2a,fig2b,fig2c,leg,
                      ncol=2,
-                     nrow=2,
-                     legend="none",
-                     align="hv")
+                     nrow = 2)
+
+# figure2 <- ggarrange(plotlist=plotlist1,
+#                      #common.legend = T,
+#                      ncol=2,
+#                      nrow=2,
+#                      legend="none")#,
+#                      #align="hv")
 
 png("fig_outputs/figure2_noFCM_updated.png", height = 11.5, width = 8, units = "in",res=300)
 png("fig_outputs/figure2_nobarren_updated.png", height = 9, width = 8, units = "in",res=300)
@@ -377,7 +385,8 @@ dev.off()
 
 #### fig3a ####
 
-mypal <- pal_npg("nrc", alpha = 1)(5)
+#mypal <- pal_npg("nrc", alpha = 1)(5)
+mypal <- pal_igv()(5)
 mig.diet.plot <- migrants_2019 %>%
   group_by(diet2, season) %>%
   dplyr::summarize(mean = mean(modified_rPI),
@@ -385,11 +394,11 @@ mig.diet.plot <- migrants_2019 %>%
                    se = sd(modified_rPI)/sqrt(length(modified_rPI)))
 
 fig3a <- ggplot(mig.diet.plot, aes(x = season, y = mean, group = diet2, col = diet2)) +
-  geom_line(aes(group=diet2),position=position_dodge(0.6)) +
+  #geom_line(aes(group=diet2),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
-  theme_classic(base_size = 22, base_family = "serif") +
+  theme_classic(base_size = 22, base_family = "sans") +
   xlab("Season") +
   ylab("Mean rPI") +
   theme(axis.text.x = element_text(angle = 45, hjust=1))+
@@ -469,7 +478,7 @@ write.table(diet.exp.tukey.table$`pairwise differences of diet2, season`, file =
 
 #### fig 3b ####
 
-mypal <- pal_npg("nrc", alpha = 1)(5)
+#mypal <- pal_npg("nrc", alpha = 1)(5)
 int.plot.ava <- availability %>%
   group_by(diet2, season) %>%
   dplyr::summarize(mean = mean(weighted_abd),
@@ -477,11 +486,11 @@ int.plot.ava <- availability %>%
                    se = sd(weighted_abd)/sqrt(length(weighted_abd)))
 
 fig3b <- ggplot(int.plot.ava, aes(x = season, y = mean, group = diet2, col = diet2)) +
-  geom_line(aes(group=diet2),position=position_dodge(0.6)) +
+  #geom_line(aes(group=diet2),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
-  theme_classic(base_size = 22, base_family = "serif") +
+  theme_classic(base_size = 22, base_family = "sans") +
   xlab("Season") +
   ylab("Mean MHA") +
   theme(axis.text.x = element_text(angle = 45, hjust=1))+
@@ -538,7 +547,7 @@ write.table(diet.tukey.pd.table$`pairwise differences of diet2, season`, file = 
 
 #### fig3c ####
 
-mypal <- pal_npg("nrc", alpha = 1)(5)
+#mypal <- pal_npg("nrc", alpha = 1)(5)
 int.plot.diet.b <- all_data4_diet %>%
   group_by(diet2, season) %>%
   dplyr::summarize(mean = mean(SHM),
@@ -546,11 +555,11 @@ int.plot.diet.b <- all_data4_diet %>%
                    se = sd(SHM)/sqrt(length(SHM)))
 
 fig3c <- ggplot(int.plot.diet.b, aes(x = season, y = mean, group = diet2, col = diet2)) +
-  geom_line(aes(group=diet2),position=position_dodge(0.6)) +
+  #geom_line(aes(group=diet2),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
-  theme_classic(base_size = 22, base_family = "serif") +
+  theme_classic(base_size = 22, base_family = "sans") +
   xlab("Season") +
   ylab("Mean SHM") +
   theme(axis.text.x = element_text(angle = 45, hjust=1))+
@@ -560,17 +569,22 @@ fig3c <- ggplot(int.plot.diet.b, aes(x = season, y = mean, group = diet2, col = 
   geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
 
 
-fig3a
-fig3b
-fig3c
-plotlist2 <- list(fig3a,fig3b,fig3c)
+leg <- get_legend(fig3a)
+#plotlist1 <- list(fig2a,fig2b,fig2c,leg)
+fig3a <- fig3a + theme(legend.position = "none")
+fig3b <- fig3b + theme(legend.position = "none")
+fig3c <- fig3c + theme(legend.position = "none")
 
-figure3 <- ggarrange(plotlist=plotlist2,
-                     common.legend = T,
+figure3 <- ggarrange(fig3a,fig3b,fig3c,leg,
                      ncol=2,
-                     nrow=2,
-                     legend="none",
-                     align="hv")
+                     nrow = 2)
+
+# figure3 <- ggarrange(plotlist=plotlist2,
+#                      common.legend = T,
+#                      ncol=2,
+#                      nrow=2,
+#                      legend="none",
+#                      align="hv")
 
 png("fig_outputs/figure3_noFCM_updated.png", height = 9, width = 8, units = "in",res=300)
 png("fig_outputs/figure3_nobarren_updated.png", height = 9, width = 8, units = "in",res=300)
@@ -644,7 +658,8 @@ write.table(for.holm.rpi$`pairwise differences of sw_foraging, season`, file = "
 
 #### fig4a ####
 
-mypal <- pal_npg("nrc", alpha = 1)(6)
+mypal <- pal_uchicago()(6)
+#mypal <- pal_npg("nrc", alpha = 1)(6)
 mig.for.plot <- migrants_2019 %>%
   group_by(sw_foraging, season) %>%
   dplyr::summarize(mean = mean(modified_rPI),
@@ -652,11 +667,11 @@ mig.for.plot <- migrants_2019 %>%
                    se = sd(modified_rPI)/sqrt(length(modified_rPI)))
 
 fig4a <- ggplot(mig.for.plot, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
-  geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
+  #geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
-  theme_classic(base_size = 22, base_family = "serif") +
+  theme_classic(base_size = 22, base_family = "sans") +
   xlab("Season") +
   ylab("Mean rPI") +
   theme(axis.text.x = element_text(angle = 45, hjust=1))+
@@ -739,7 +754,7 @@ write.table(for.exp.tukey.table$`pairwise differences of sw_foraging`, file = "f
 
 #### fig 4b ####
 
-mypal <- pal_npg("nrc", alpha = 1)(6)
+#mypal <- pal_npg("nrc", alpha = 1)(6)
 int.plot.ava <- availability %>%
   group_by(sw_foraging, season) %>%
   dplyr::summarize(mean = mean(weighted_abd),
@@ -747,11 +762,11 @@ int.plot.ava <- availability %>%
                    se = sd(weighted_abd)/sqrt(length(weighted_abd)))
 
 fig4b <- ggplot(int.plot.ava, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
-  geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
+  #geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
-  theme_classic(base_size = 22, base_family = "serif") +
+  theme_classic(base_size = 22, base_family = "sans") +
   xlab("Season") +
   ylab("Mean MHA") +
   theme(axis.text.x = element_text(angle = 45, hjust=1))+
@@ -809,7 +824,7 @@ write.table(for.holm.pd.table$`pairwise differences of sw_foraging, season`, fil
 
 #### fig4c ####
 
-mypal <- pal_npg("nrc", alpha = 1)(6)
+#mypal <- pal_npg("nrc", alpha = 1)(6)
 int.plot.for.b <- all_data4_for %>%
   group_by(sw_foraging, season) %>%
   dplyr::summarize(mean = mean(SHM),
@@ -817,11 +832,11 @@ int.plot.for.b <- all_data4_for %>%
                    se = sd(SHM)/sqrt(length(SHM)))
 
 fig4c <- ggplot(int.plot.for.b, aes(x = season, y = mean, group = sw_foraging, col = sw_foraging)) +
-  geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
+  #geom_line(aes(group=sw_foraging),position=position_dodge(0.6)) +
   geom_point(position=position_dodge(0.6), size=3, pch=18) +
   geom_errorbar(aes(ymin=mean-(se), ymax=mean+(se)), width=1,
                 position=position_dodge(0.6)) +
-  theme_classic(base_size = 22, base_family = "serif") +
+  theme_classic(base_size = 22, base_family = "sans") +
   xlab("Season") +
   ylab("Mean SHM") +
   theme(axis.text.x = element_text(angle = 45, hjust=1))+
@@ -832,17 +847,22 @@ fig4c <- ggplot(int.plot.for.b, aes(x = season, y = mean, group = sw_foraging, c
   geom_vline(xintercept=c(1.5,2.5,3.5),color="grey",alpha=0.5)
 
 
-fig4a
-fig4b
-fig4c
-plotlist3 <- list(fig4a,fig4b,fig4c)
+leg <- get_legend(fig4a)
+#plotlist1 <- list(fig2a,fig2b,fig2c,leg)
+fig4a <- fig4a + theme(legend.position = "none")
+fig4b <- fig4b + theme(legend.position = "none")
+fig4c <- fig4c + theme(legend.position = "none")
 
-figure4 <- ggarrange(plotlist=plotlist3,
-                     common.legend = T,
+figure4 <- ggarrange(fig4a,fig4b,fig4c,leg,
                      ncol=2,
-                     nrow=2,
-                     legend="none",
-                     align="hv")
+                     nrow = 2)
+
+# figure4 <- ggarrange(plotlist=plotlist3,
+#                      common.legend = T,
+#                      ncol=2,
+#                      nrow=2,
+#                      legend="none",
+#                      align="hv")
 
 png("fig_outputs/figure4_noFCM_updated.png", height = 9, width = 8, units = "in",res=300)
 png("fig_outputs/figure4_nobarren_updated.png", height = 9, width = 8, units = "in",res=300)
